@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0A9643EF-CCAB-4094-AE6C-E10645CDFB69}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftTouch.Parsing.Core", "src\SoftTouch.Parsing.Core\SoftTouch.Parsing.Core.csproj", "{CBD758D4-5ECF-4C36-8DC5-E54D59EA4B37}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftTouch.Parsing.Experiments", "src\SoftTouch.Parsing.Experiments\SoftTouch.Parsing.Experiments.csproj", "{F7208C2A-0119-4AF8-B0DB-692B3927763C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CBD758D4-5ECF-4C36-8DC5-E54D59EA4B37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBD758D4-5ECF-4C36-8DC5-E54D59EA4B37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBD758D4-5ECF-4C36-8DC5-E54D59EA4B37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBD758D4-5ECF-4C36-8DC5-E54D59EA4B37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7208C2A-0119-4AF8-B0DB-692B3927763C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7208C2A-0119-4AF8-B0DB-692B3927763C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7208C2A-0119-4AF8-B0DB-692B3927763C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7208C2A-0119-4AF8-B0DB-692B3927763C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CBD758D4-5ECF-4C36-8DC5-E54D59EA4B37} = {0A9643EF-CCAB-4094-AE6C-E10645CDFB69}
+		{F7208C2A-0119-4AF8-B0DB-692B3927763C} = {0A9643EF-CCAB-4094-AE6C-E10645CDFB69}
+	EndGlobalSection
+EndGlobal
