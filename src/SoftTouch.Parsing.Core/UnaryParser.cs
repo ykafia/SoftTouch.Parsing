@@ -12,7 +12,7 @@ public class LiteralParser : Parser
 
     public override bool ParseInternal(ref StringScanner scanner)
     {
-        scanner.ReadString(literal);
+        return scanner.ReadString(literal, true);
     }
 }
 
