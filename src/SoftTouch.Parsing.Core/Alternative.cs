@@ -1,6 +1,11 @@
-namespace SoftTouch.Parsing.Core;
+using SoftTouch.Parsing.Parsers;
 
-public class Alternative
+namespace SoftTouch.Parsing;
+
+public class Alternative : ListParser
 {
-    Parser[] parsers;
+    public override int InnerParse(ref ParserArgs scanner)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace SoftTouch.Parsing.Core;
+namespace SoftTouch.Parsing;
 
 public struct StringScanner
 {
-    public int Position { get; private set; }
+    public int Position { get; set; }
 
     readonly int end;
     readonly int start;
