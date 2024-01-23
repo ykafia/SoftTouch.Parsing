@@ -8,3 +8,8 @@ public abstract class Parser
     public bool Store => Name is not null;
     public abstract int InnerParse(ref ParserArgs scanner);
 }
+
+public abstract class TerminalParser : Parser
+{
+    
+}

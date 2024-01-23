@@ -1,14 +1,9 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using SoftTouch.Parsing.Core;
-using SoftTouch.Parsing.Core.Parsers;
+
+using System.Runtime.InteropServices;
+using SoftTouch.Parsing.SDSL;
 
 Console.WriteLine("Hello, World!");
 
-
-var letter = Terminals.Letter();
-
-var text = "h";
-
-var a = new ParserArgs(text);
-
-letter.InnerParse(ref a);
+Console.WriteLine($"Size of CharTerminal is {Marshal.SizeOf<CharTerminal>()}");
+Console.WriteLine($"Size of DigitTerminal is {Marshal.SizeOf<DigitTerminal>()}");
