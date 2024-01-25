@@ -3,7 +3,4 @@
 using System.Runtime.InteropServices;
 using SoftTouch.Parsing.SDSL;
 
-Console.WriteLine("Hello, World!");
-
-Console.WriteLine($"Size of CharTerminal is {Marshal.SizeOf<CharTerminal>()}");
-Console.WriteLine($"Size of DigitTerminal is {Marshal.SizeOf<DigitTerminal>()}");
+Console.WriteLine(Grammar.Match("1235"));

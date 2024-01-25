@@ -3,12 +3,17 @@ namespace SoftTouch.Parsing.SDSL;
 
 public struct Scanner(string code)
 {
+
+    readonly int start = 0;
+    readonly int end = code.Length;
+
     public string Code { get; } = code;
     public readonly ReadOnlyMemory<char> Memory => Code.AsMemory();
     public readonly ReadOnlySpan<char> Span => Code.AsSpan();
     public int Position { get; set; } = 0;
-    readonly int end = code.Length;
-    readonly int start = 0;
+
+    public readonly int Line => Span[..Position].Count('\n') + 1;
+    public readonly int Column => Position - Span[..Position].LastIndexOf('\n') + 1;
 
 
     public readonly bool IsEof => Position >= end;
@@ -31,7 +36,7 @@ public struct Scanner(string code)
         return pos < end ? Code[pos] : -1;
     }
     public readonly ReadOnlySpan<char> Peek(int size)
-        => Position < end ? Slice(Position,size) : [];
+        => Position < end ? Slice(Position, size) : [];
 
     public int Advance(int length)
     {
