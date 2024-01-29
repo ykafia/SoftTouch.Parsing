@@ -2,10 +2,26 @@ using SoftTouch.Parsing.SDSL.AST;
 
 namespace SoftTouch.Parsing.SDSL;
 
-public record struct Result<TResult, TError>(TResult? Ok = null, TError? Err = null)
-    where TResult : Node
-    where TError : struct
+public class ParseError(string message, TextLocation location)
 {
-    public static implicit operator Result<TResult,TError>(TResult res) => new(res, null);
-    public static implicit operator Result<TResult,TError>(TError err) => new(null, err);
+    public string Message { get; set; } = message;
+    public TextLocation Location { get; set; } = location;
+
+    public override string ToString()
+    {
+        return $"{Message} at : {Location}";
+    }
+}
+
+
+public class ParseResult<T>
+    where T : Node
+{
+    public T? AST { get; set; }
+    public List<ParseError> Errors { get; } = [];
+}
+public class ParseResult : ParseResult<Node>
+{
+    public Node? AST { get; set; }
+    public List<ParseError> Errors { get; } = [];
 }

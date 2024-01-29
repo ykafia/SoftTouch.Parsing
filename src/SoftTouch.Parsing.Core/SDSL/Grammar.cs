@@ -4,11 +4,15 @@ namespace SoftTouch.Parsing.SDSL;
 
 public static class Grammar
 {
-    public static Node Match(string code)
+    public static ParseResult Match<T>(string code)
+        where T : Node
     {
-        var p = new IntegerParser();
+        var p = new NumberParser();
         var scanner = new Scanner(code);
-        p.Match(ref scanner, out var num);
-        return num;
+        var result = new ParseResult();
+        if (p.Match<NumberLiteral>(ref scanner, result, out var fnum))
+            result.AST = fnum;
+        Terminals.EOF(ref scanner);
+        return result;
     }
 }

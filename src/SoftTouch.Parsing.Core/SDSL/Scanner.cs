@@ -102,4 +102,9 @@ public struct Scanner(string code)
         }
         return lineCount + 1;
     }
+
+    public readonly TextLocation GetLocation(int position, int length)
+    {
+        return new(Line, Column, Memory.Slice(position, length));
+    }
 }
