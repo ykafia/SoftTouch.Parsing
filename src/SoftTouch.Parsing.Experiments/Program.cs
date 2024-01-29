@@ -6,7 +6,7 @@ using SoftTouch.Parsing.SDSL.AST;
 
 
 Console.WriteLine(char.IsWhiteSpace('\n'));
-var result = Grammar.Match<NumberLiteral>("1h");
+var result = Grammar.Match<LiteralsParser, Literal>("my_var");
 if(result.AST is not null)
     Console.WriteLine(result.AST);
 else

@@ -36,4 +36,9 @@ public class BoolLiteral(bool value, TextLocation info) : Literal(info)
 public class Identifier(string name, TextLocation info) : Literal(info)
 {
     public string Name { get; set; } = name;
+
+    public override string ToString()
+    {
+        return $"[Variable : {Name}]";
+    }
 }

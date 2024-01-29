@@ -9,6 +9,42 @@ public interface ILiteralParser<TResult>
     public bool Match(ref Scanner scanner, ParseResult result, out TResult literal);
 }
 
+public static class Literals
+{
+    public static bool Literal(ref Scanner scanner, ParseResult result, out Literal literal) => new LiteralsParser().Match(ref scanner, result, out literal);
+    public static bool Identifier(ref Scanner scanner, ParseResult result, out Identifier identifier) => new IdentifierParser().Match(ref scanner, result, out identifier);
+    public static bool Number(ref Scanner scanner, ParseResult result, out NumberLiteral number) => new NumberParser().Match(ref scanner, result, out number);
+    public static bool Operator(ref Scanner scanner, ParseResult result, out Operator op) => new OperatorParser().Match(ref scanner, result, out op);
+}
+
+
+public record struct LiteralsParser : IParser<Literal>
+{
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Literal literal)
+    {
+        var position = scanner.Position;
+        if(Literals.Identifier(ref scanner, result, out var i))
+        {
+            literal = i;
+            return true;
+        }
+        else if (Literals.Number(ref scanner, result, out var n))
+        {
+            literal = n;
+            return true;
+        }
+        else 
+        {
+            literal = null!;
+            scanner.Position = position;
+            result.Errors.Add(
+                new($"expected : Identifier | Literal", scanner.GetLocation(scanner.Position, 3))
+            );
+            return false;
+        }
+    }
+}
+
 
 public readonly record struct OperatorParser() : ILiteralParser<Operator>
 {
@@ -162,6 +198,25 @@ public readonly record struct IntegerSuffixParser() : ILiteralParser<Suffix>
         {
             scanner.Advance(1);
             suffix = new(64, false, true);
+            return true;
+        }
+        else return false;
+    }
+}
+
+
+public record struct IdentifierParser() : ILiteralParser<Identifier>
+{
+    public bool Match(ref Scanner scanner, ParseResult result, out Identifier literal)
+    {
+        literal = null!;
+        var position = scanner.Position;
+        if(Terminals.Char('_', ref scanner) || Terminals.Letter(ref scanner))
+        {
+            scanner.Advance(1);
+            while(Terminals.LetterOrDigit(ref scanner) || Terminals.Char('_', ref scanner))
+                scanner.Advance(1);
+            literal = new(scanner.Memory[position..scanner.Position].ToString(), scanner.GetLocation(position, scanner.Position - position));
             return true;
         }
         else return false;

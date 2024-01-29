@@ -5,17 +5,17 @@ namespace SoftTouch.Parsing.SDSL;
 
 public struct NumberParser : IParser<NumberLiteral>
 {
-    public readonly bool Match<TNode>(ref Scanner scanner, ParseResult result, out NumberLiteral parsed) where TNode : Node
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out NumberLiteral parsed)
     {
         var fp = new FloatParser();
         var ip = new IntegerParser();
 
-        if (fp.Match<FloatLiteral>(ref scanner, result, out FloatLiteral pf))
+        if (fp.Match(ref scanner, result, out FloatLiteral pf))
         {
             parsed = pf;
             return true;
         }
-        else if (ip.Match<IntegerLiteral>(ref scanner, result, out IntegerLiteral pi))
+        else if (ip.Match(ref scanner, result, out IntegerLiteral pi))
         {
             parsed = pi;
             return true;
@@ -27,8 +27,8 @@ public struct NumberParser : IParser<NumberLiteral>
 
 public struct IntegerParser : IParser<IntegerLiteral>
 {
-    public readonly bool Match<TNode>(ref Scanner scanner, ParseResult result, out IntegerLiteral node)
-        where TNode : Node
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out IntegerLiteral node)
+       
     {
         var position = scanner.Position;
         DigitTerminalParser nonZero = new(DigitMode.ExceptZero);
@@ -60,8 +60,8 @@ public struct IntegerParser : IParser<IntegerLiteral>
 
 public struct FloatParser : IParser<FloatLiteral>
 {
-    public readonly bool Match<TNode>(ref Scanner scanner, ParseResult result, out FloatLiteral node)
-        where TNode : Node
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out FloatLiteral node)
+       
     {
         var position = scanner.Position;
         node = null!;
@@ -129,8 +129,8 @@ public struct FloatParser : IParser<FloatLiteral>
 }
 // public struct HexParser : IParser<HexLiteral>
 // {
-//     public bool Match<TNode>(ref Scanner scanner, ParseResult<TNode> result, out HexLiteral node)
-//         where TNode : Node
+//     public bool Match(ref Scanner scanner, ParseResult result, out HexLiteral node)
+//        
 //     {
 //         var position = scanner.Position;
 //         DigitTerminalParser zero = new(DigitMode.OnlyZero);
