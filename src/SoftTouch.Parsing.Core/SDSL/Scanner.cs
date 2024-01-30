@@ -50,7 +50,7 @@ public struct Scanner(string code)
         return -1;
     }
 
-    public bool ReadString(string matchString, bool caseSensitive)
+    public readonly bool ReadString(string matchString, bool caseSensitive)
     {
         var index = Position;
         var endstring = index + matchString.Length;
@@ -63,7 +63,6 @@ public struct Scanner(string code)
                     if (Span[index++] != matchString[i])
                         return false;
                 }
-                Position = endstring;
                 return true;
             }
             else
@@ -73,7 +72,6 @@ public struct Scanner(string code)
                     if (char.ToLowerInvariant(Span[index++]) != char.ToLowerInvariant(matchString[i]))
                         return false;
                 }
-                Position = endstring;
                 return true;
             }
         }

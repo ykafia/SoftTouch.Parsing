@@ -9,26 +9,17 @@ public interface ILiteralParser<TResult>
     public bool Match(ref Scanner scanner, ParseResult result, out TResult literal);
 }
 
-public static class Literals
-{
-    public static bool Literal(ref Scanner scanner, ParseResult result, out Literal literal) => new LiteralsParser().Match(ref scanner, result, out literal);
-    public static bool Identifier(ref Scanner scanner, ParseResult result, out Identifier identifier) => new IdentifierParser().Match(ref scanner, result, out identifier);
-    public static bool Number(ref Scanner scanner, ParseResult result, out NumberLiteral number) => new NumberParser().Match(ref scanner, result, out number);
-    public static bool Operator(ref Scanner scanner, ParseResult result, out Operator op) => new OperatorParser().Match(ref scanner, result, out op);
-}
-
-
 public record struct LiteralsParser : IParser<Literal>
 {
     public readonly bool Match(ref Scanner scanner, ParseResult result, out Literal literal)
     {
         var position = scanner.Position;
-        if(Literals.Identifier(ref scanner, result, out var i))
+        if(Identifier(ref scanner, result, out var i))
         {
             literal = i;
             return true;
         }
-        else if (Literals.Number(ref scanner, result, out var n))
+        else if (Number(ref scanner, result, out var n))
         {
             literal = n;
             return true;
@@ -43,6 +34,10 @@ public record struct LiteralsParser : IParser<Literal>
             return false;
         }
     }
+    public static bool Literal(ref Scanner scanner, ParseResult result, out Literal literal) => new LiteralsParser().Match(ref scanner, result, out literal);
+    public static bool Identifier(ref Scanner scanner, ParseResult result, out Identifier identifier) => new IdentifierParser().Match(ref scanner, result, out identifier);
+    public static bool Number(ref Scanner scanner, ParseResult result, out NumberLiteral number) => new NumberParser().Match(ref scanner, result, out number);
+    public static bool Operator(ref Scanner scanner, ParseResult result, out Operator op) => new OperatorParser().Match(ref scanner, result, out op);
 }
 
 

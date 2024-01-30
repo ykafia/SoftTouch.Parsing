@@ -16,7 +16,7 @@ public abstract class NumberLiteral<T>(Suffix suffix, T value, TextLocation info
 
     public override string ToString()
     {
-        return $"[Number : {Value}{Suffix}]";
+        return $"{Value}{Suffix}";
     }
 }
 
@@ -39,6 +39,6 @@ public class Identifier(string name, TextLocation info) : Literal(info)
 
     public override string ToString()
     {
-        return $"[Variable : {Name}]";
+        return $"{Name}";
     }
 }

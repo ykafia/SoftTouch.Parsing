@@ -38,7 +38,7 @@ public enum Operator
 
 public static class StringOperatorExtensions
 {
-    public static Operator ToOperator(this string s)
+    public static Operator ToOperator(this ReadOnlySpan<char> s)
     {
         return s switch
         {
@@ -67,14 +67,86 @@ public static class StringOperatorExtensions
             _ => Operator.Nop,
         };
     }
+    public static Operator ToOperator(this string s)
+    {
+        return s switch
+        {
+            "!" => Operator.Not,
+            "~" => Operator.BitwiseNot,
+            "++" => Operator.Inc,
+            "--" => Operator.Dec,
+            "+" => Operator.Add,
+            "-" => Operator.Sub,
+            "*" => Operator.Mul,
+            "/" => Operator.Div,
+            "%" => Operator.Mod,
+            ">>" => Operator.RightShift,
+            "<<" => Operator.LeftShift,
+            "&" => Operator.AND,
+            "|" => Operator.OR,
+            "^" => Operator.XOR,
+            ">" => Operator.Greater,
+            "<" => Operator.Lower,
+            ">=" => Operator.GreaterOrEqual,
+            "<=" => Operator.LowerOrEqual,
+            "==" => Operator.Equals,
+            "!=" => Operator.NotEquals,
+            "&&" => Operator.LogicalAND,
+            "||" => Operator.LogicalOR,
+            _ => Operator.Nop,
+        };
+    }
+
+    public static Operator ToOperator(this char c)
+    {
+        return c switch
+        {
+            '!' => Operator.Not,
+            '~' => Operator.BitwiseNot,
+            '+' => Operator.Add,
+            '-' => Operator.Sub,
+            '*' => Operator.Mul,
+            '/' => Operator.Div,
+            '%' => Operator.Mod,
+            '&' => Operator.AND,
+            '|' => Operator.OR,
+            '^' => Operator.XOR,
+            '>' => Operator.Greater,
+            '<' => Operator.Lower,
+            _ => Operator.Nop,
+        };
+    }
+}
+
+
+public abstract class Expression(TextLocation info) : ValueNode(info);
+
+
+public abstract class UnaryExpression(Expression expression, Operator op, TextLocation info) : Expression(info)
+{
+    public Expression Expression { get; set; } = expression;
+    public Operator Operator { get; set; } = op;
+}
+
+public class PrefixExpression(Operator op, Expression expression, TextLocation info) : UnaryExpression(expression, op, info);
+public class PostfixExpression(Expression expression, Operator op,TextLocation info) : UnaryExpression(expression, op, info);
+
+public class BinaryExpression(Expression left, Operator op, Expression right, TextLocation info) : Expression(info)
+{
+    public Operator Op { get; set; } = op;
+    public Expression Left { get; set; } = left;
+    public Expression Right { get; set; } = right;
+
+    public override string ToString()
+    {
+        return $"({Left} {Op} {Right})";
+    }
 }
 
 
 
-
-public class Expression(ValueNode left, Operator op, ValueNode right, TextLocation info) : Node(info)
+public class ValueExpression(Literal value) : Expression(value.Info)
 {
-    public Operator Op { get; set; } = op;
-    public ValueNode Left { get; set; } = left;
-    public ValueNode Right { get; set; } = right;
+    public Literal Value { get; set; } = value;
+    public override string ToString() => Value.ToString() ?? "";
 }

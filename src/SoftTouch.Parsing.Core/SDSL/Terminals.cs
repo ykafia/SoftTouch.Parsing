@@ -6,6 +6,7 @@ public static class Terminals
 {
     public static bool AnyChar(ref Scanner scanner) => !scanner.IsEof;
     public static bool Char(char c, ref Scanner scanner)  => new CharTerminalParser(c).Match(ref scanner);
+    public static bool Set(string set, ref Scanner scanner) => new SetTerminalParser(set).Match(ref scanner);
     public static bool Literal(string c, ref Scanner scanner) => new LiteralTerminalParser(c).Match(ref scanner);
     public static bool Digit(ref Scanner scanner, DigitMode mode = DigitMode.All) => new DigitTerminalParser(mode).Match(ref scanner);
     public static bool Letter(ref Scanner scanner) => new LetterTerminalParser().Match(ref scanner);
