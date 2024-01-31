@@ -327,7 +327,9 @@ public record struct RelationalParser() : IParser<Expression>
         if (ExpressionParser.Shift(ref scanner, result, out var left))
         {
             ws0.Match(ref scanner, result, out _);
-            if (Terminals.Literal(">", ref scanner) || Terminals.Literal("<", ref scanner))
+            if (
+                !Terminals.Literal(">=", ref scanner) && Terminals.Literal(">", ref scanner) 
+                || !Terminals.Literal("<=", ref scanner) && Terminals.Literal("<", ref scanner))
             {
                 var op = ((char)scanner.Peek()).ToOperator();
                 scanner.Advance(1);
