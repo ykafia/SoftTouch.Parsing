@@ -10,6 +10,9 @@ public struct ExpressionParser : IParser<Expression>
             return true;
         else return false;
     }
+
+    public static bool Expression(ref Scanner scanner, ParseResult result, out Expression parsed)
+        => new ExpressionParser().Match(ref scanner, result, out parsed);
     public static bool Add(ref Scanner scanner, ParseResult result, out Expression parsed)
         => new AdditionParser().Match(ref scanner, result, out parsed);
     public static bool Mul(ref Scanner scanner, ParseResult result, out Expression parsed)
@@ -489,7 +492,7 @@ public record struct MultiplicationParser() : IParser<Expression>
         var ws0 = new Space0();
         parsed = null!;
         ws0.Match(ref scanner, result, out _);
-        if (LiteralsParser.Literal(ref scanner, result, out var left))
+        if (UnaryParsers.Prefix(ref scanner, result, out var left))
         {
             ws0.Match(ref scanner, result, out _);
             if (Terminals.Set("*/%", ref scanner))
@@ -499,12 +502,12 @@ public record struct MultiplicationParser() : IParser<Expression>
                 ws0.Match(ref scanner, result, out _);
                 if (ExpressionParser.Mul(ref scanner, result, out var expression))
                 {
-                    parsed = new BinaryExpression(new ValueExpression(left), op, expression, scanner.GetLocation(position, scanner.Position - position));
+                    parsed = new BinaryExpression(left, op, expression, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else if(LiteralsParser.Literal(ref scanner, result, out var lit2))
+                else if(UnaryParsers.Prefix(ref scanner, result, out var right))
                 {
-                    parsed = new BinaryExpression(new ValueExpression(left), op, new ValueExpression(lit2), scanner.GetLocation(position, scanner.Position - position));
+                    parsed = new BinaryExpression(left, op, right, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
                 scanner.Position = position;
@@ -512,7 +515,7 @@ public record struct MultiplicationParser() : IParser<Expression>
             }
             else
             {
-                parsed = new ValueExpression(left);
+                parsed = left;
                 return true;
             }
         }

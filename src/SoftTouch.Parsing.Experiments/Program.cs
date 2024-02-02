@@ -6,7 +6,7 @@ using SoftTouch.Parsing.SDSL.AST;
 
 
 Console.WriteLine(char.IsWhiteSpace('\n'));
-var result = Grammar.Match<ExpressionParser, Expression>("my_var \n + 1*  2> 6&&  \n\n   2");
+var result = Grammar.Match<ExpressionParser, Expression>("(int)machin");
 if(result.AST is not null)
     Console.WriteLine(result.AST);
 else

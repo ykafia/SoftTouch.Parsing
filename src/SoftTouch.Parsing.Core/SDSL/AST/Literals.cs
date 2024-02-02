@@ -21,10 +21,11 @@ public abstract class NumberLiteral<T>(Suffix suffix, T value, TextLocation info
 }
 
 public class IntegerLiteral(Suffix suffix, long value, TextLocation info) : NumberLiteral<long>(suffix, value, info);
+public class UnsignedIntegerLiteral(Suffix suffix, ulong value, TextLocation info) : NumberLiteral<ulong>(suffix, value, info);
 
 public sealed class FloatLiteral(Suffix suffix, double value, TextLocation info) : NumberLiteral<double>(suffix, value, info);
 
-public sealed class HexLiteral(long value, TextLocation info) : IntegerLiteral(new(32, false, false), value, info);
+public sealed class HexLiteral(ulong value, TextLocation info) : UnsignedIntegerLiteral(new(32, false, false), value, info);
 
 
 public class BoolLiteral(bool value, TextLocation info) : Literal(info)

@@ -3,6 +3,9 @@ namespace SoftTouch.Parsing.SDSL.AST;
 public enum Operator
 {
     Nop,
+    Cast,
+    Positive,
+    Negative,
     Not,
     /// <summary>
     /// Bitwise not
@@ -16,8 +19,8 @@ public enum Operator
     /// Decrement
     /// </summary>
     Dec,
-    Add,
-    Sub,
+    Plus,
+    Minus,
     Mul,
     Div,
     Mod,
@@ -46,8 +49,8 @@ public static class StringOperatorExtensions
             "~" => Operator.BitwiseNot,
             "++" => Operator.Inc,
             "--" => Operator.Dec,
-            "+" => Operator.Add,
-            "-" => Operator.Sub,
+            "+" => Operator.Plus,
+            "-" => Operator.Minus,
             "*" => Operator.Mul,
             "/" => Operator.Div,
             "%" => Operator.Mod,
@@ -75,8 +78,8 @@ public static class StringOperatorExtensions
             "~" => Operator.BitwiseNot,
             "++" => Operator.Inc,
             "--" => Operator.Dec,
-            "+" => Operator.Add,
-            "-" => Operator.Sub,
+            "+" => Operator.Plus,
+            "-" => Operator.Minus,
             "*" => Operator.Mul,
             "/" => Operator.Div,
             "%" => Operator.Mod,
@@ -103,8 +106,8 @@ public static class StringOperatorExtensions
         {
             '!' => Operator.Not,
             '~' => Operator.BitwiseNot,
-            '+' => Operator.Add,
-            '-' => Operator.Sub,
+            '+' => Operator.Plus,
+            '-' => Operator.Minus,
             '*' => Operator.Mul,
             '/' => Operator.Div,
             '%' => Operator.Mod,
@@ -129,7 +132,14 @@ public abstract class UnaryExpression(Expression expression, Operator op, TextLo
 }
 
 public class PrefixExpression(Operator op, Expression expression, TextLocation info) : UnaryExpression(expression, op, info);
-public class PostfixExpression(Expression expression, Operator op,TextLocation info) : UnaryExpression(expression, op, info);
+
+public class CastExpression(string typeName, Operator op, Expression expression, TextLocation info) : PrefixExpression(op, expression, info)
+{
+    public string TypeName { get; set; } = typeName;
+}
+
+public class PostfixExpression(Expression expression, Operator op, TextLocation info) : UnaryExpression(expression, op, info);
+
 
 public class BinaryExpression(Expression left, Operator op, Expression right, TextLocation info) : Expression(info)
 {
