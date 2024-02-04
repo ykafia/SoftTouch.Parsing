@@ -15,6 +15,6 @@ public record struct UnaryParsers
         => new CastExpressionParser().Match(ref scanner, result, out cast);
     public static bool Prefix(ref Scanner scanner, ParseResult result, out PrefixExpression prefix)
         => new PrefixParser().Match(ref scanner, result, out prefix);
-    public static bool Postfix(ref Scanner scanner, ParseResult result, out PostfixExpression postfix)
+    public static bool Postfix(ref Scanner scanner, ParseResult result, out Expression postfix)
        => new PostfixParser().Match(ref scanner, result, out postfix);
 }

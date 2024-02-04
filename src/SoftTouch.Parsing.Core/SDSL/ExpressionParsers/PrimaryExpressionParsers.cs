@@ -16,7 +16,8 @@ public record struct PrimaryParsers : IParser<Expression>
         }
         else return false;
     }
-
+    public static bool Primary(ref Scanner scanner, ParseResult result, out Expression parsed)
+            => new PrimaryParsers().Match(ref scanner, result, out parsed);
     public static bool Parenthesis(ref Scanner scanner, ParseResult result, out Expression parsed)
         => new ParenthesisExpressionParser().Match(ref scanner, result, out parsed);
 }

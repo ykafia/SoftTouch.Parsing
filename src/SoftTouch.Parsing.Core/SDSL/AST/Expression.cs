@@ -36,7 +36,9 @@ public enum Operator
     NotEquals,
     Equals,
     LogicalAND,
-    LogicalOR
+    LogicalOR,
+    Accessor,
+    Indexer
 }
 
 public static class StringOperatorExtensions
@@ -139,6 +141,15 @@ public class CastExpression(string typeName, Operator op, Expression expression,
 }
 
 public class PostfixExpression(Expression expression, Operator op, TextLocation info) : UnaryExpression(expression, op, info);
+public class AccessorExpression(Expression expression, Identifier accessed, TextLocation info) : PostfixExpression(expression, Operator.Accessor, info)
+{
+    public Identifier Accessed { get; set; } = accessed;
+}
+
+public class IndexerExpression(Expression expression, Expression index, TextLocation info) : PostfixExpression(expression, Operator.Indexer, info)
+{
+    public Expression Index { get; set; } = index;
+}
 
 
 public class BinaryExpression(Expression left, Operator op, Expression right, TextLocation info) : Expression(info)
