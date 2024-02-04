@@ -112,7 +112,7 @@ public record struct PostfixAccessorParser : IParser<PostfixExpression>
     {
         var position = scanner.Position;
         parsed = null!;
-        if(PostfixParser.Accessor(ref scanner, result, out var accesor))
+        if(PostfixParser.Accessor(ref scanner, result, out var accessor))
         {
             if(
                 CommonParsers.Spaces0(ref scanner, result, out _)
@@ -121,7 +121,7 @@ public record struct PostfixAccessorParser : IParser<PostfixExpression>
                 && LiteralsParser.Identifier(ref scanner, result, out var identifier)
             )
             {
-                parsed = new AccessorExpression(accesor, identifier, scanner.GetLocation(position, scanner.Position - position));
+                parsed = new AccessorExpression(accessor, identifier, scanner.GetLocation(position, scanner.Position - position));
                 return true;
             }
             else 

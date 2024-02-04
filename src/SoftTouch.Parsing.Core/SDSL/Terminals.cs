@@ -65,9 +65,10 @@ public record struct LetterTerminalParser() : ITerminal
 {
     public readonly bool Match(ref Scanner scanner, bool advance)
     {
-        if(advance && scanner.Peek() > 0 && char.IsLetter((char)scanner.Peek()))
+        if(scanner.Peek() > 0 && char.IsLetter((char)scanner.Peek()))
         {
-            scanner.Advance(1);
+            if(advance)
+                scanner.Advance(1);
             return true;
         }
         return false;
@@ -77,9 +78,10 @@ public record struct LetterOrDigitTerminalParser() : ITerminal
 {
     public readonly bool Match(ref Scanner scanner, bool advance)
     {
-        if(advance && scanner.Peek() > 0 && char.IsLetterOrDigit((char)scanner.Peek()))
+        if(scanner.Peek() > 0 && char.IsLetterOrDigit((char)scanner.Peek()))
         {
-            scanner.Advance(1);
+            if(advance)
+                scanner.Advance(1);
             return true;
         }
         return false;
@@ -90,9 +92,10 @@ public record struct LiteralTerminalParser(string Literal, bool CaseSensitive = 
 {
     public readonly bool Match(ref Scanner scanner, bool advance)
     {
-        if(advance && scanner.ReadString(Literal, CaseSensitive))
+        if(scanner.ReadString(Literal, CaseSensitive))
         {
-            scanner.Advance(Literal.Length);
+            if(advance)
+                scanner.Advance(Literal.Length);
             return true;
         }
         return false;
@@ -104,9 +107,10 @@ public record struct SetTerminalParser(string Set) : ITerminal
 {
     public readonly bool Match(ref Scanner scanner, bool advance)
     {
-        if(advance && scanner.Peek() > 0 && Set.Contains((char)scanner.Peek()))
+        if(scanner.Peek() > 0 && Set.Contains((char)scanner.Peek()))
         {
-            scanner.Advance(1);
+            if(advance)
+                scanner.Advance(1);
             return true;
         }
         return false;
@@ -126,9 +130,10 @@ public record struct EOLTerminalParser() : ITerminal
 {
     public readonly bool Match(ref Scanner scanner, bool advance)
     {
-        if(advance && (char)scanner.Peek() == '\n')
+        if((char)scanner.Peek() == '\n')
         {
-            scanner.Advance(1);
+            if(advance)
+                scanner.Advance(1);
             return true;
         }
         return (char)scanner.Peek() == '\n';
