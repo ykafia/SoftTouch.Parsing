@@ -6,7 +6,7 @@ public record struct PostfixParser : IParser<Expression>
 {
     public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
     {
-        if(Increment(ref scanner, result, out var nparsed))
+        if (Increment(ref scanner, result, out var nparsed))
         {
             parsed = nparsed;
             return true;
@@ -21,16 +21,17 @@ public record struct PostfixParser : IParser<Expression>
             parsed = idparsed;
             return true;
         }
-        else if(PrimaryParsers.Primary(ref scanner, result, out parsed))
+        else if (PrimaryParsers.Primary(ref scanner, result, out parsed))
             return true;
-        else 
+        else
         {
             result.Errors.Add(new("Expected Postfix parser here", scanner.GetLocation(scanner.Position, 1)));
             parsed = null!;
             return false;
         }
     }
-
+    public static bool Postfix(ref Scanner scanner, ParseResult result, out Expression parsed)
+            => new PostfixParser().Match(ref scanner, result, out parsed);
     public static bool Increment(ref Scanner scanner, ParseResult result, out PostfixExpression parsed)
         => new PostfixIncrementParser().Match(ref scanner, result, out parsed);
     public static bool Accessor(ref Scanner scanner, ParseResult result, out PostfixExpression parsed)
@@ -112,61 +113,74 @@ public record struct PostfixAccessorParser : IParser<PostfixExpression>
     {
         var position = scanner.Position;
         parsed = null!;
-        if(PostfixParser.Accessor(ref scanner, result, out var accessor))
+        if (PostfixParser.Indexer(ref scanner, result, out var indexer))
         {
-            if(
+            var a = new AccessorExpression(indexer, new());
+            while (
                 CommonParsers.Spaces0(ref scanner, result, out _)
                 && Terminals.Char('.', ref scanner)
                 && CommonParsers.Spaces0(ref scanner, result, out _)
                 && LiteralsParser.Identifier(ref scanner, result, out var identifier)
             )
-            {
-                parsed = new AccessorExpression(accessor, identifier, scanner.GetLocation(position, scanner.Position - position));
-                return true;
-            }
-            else 
+                a.Accessed.Add(identifier);
+            if (a.Accessed.Count == 0)
             {
                 scanner.Position = position;
                 return false;
             }
-        }
-        else if(PostfixParser.Indexer(ref scanner, result, out var indexer))
-        {
-            if (
-                CommonParsers.Spaces0(ref scanner, result, out _)
-                && Terminals.Char('.', ref scanner)
-                && CommonParsers.Spaces0(ref scanner, result, out _)
-                && LiteralsParser.Identifier(ref scanner, result, out var identifier)
-            )
+            else
             {
-                parsed = new AccessorExpression(indexer, identifier, scanner.GetLocation(position, scanner.Position - position));
+                a.Info = scanner.GetLocation(position, scanner.Position - position);
+                parsed = a;
                 return true;
-            }
-            else 
-            {
-                scanner.Position = position;
-                return false;
             }
         }
         else if (PostfixParser.Increment(ref scanner, result, out var increment))
         {
-            if (
+            var a = new AccessorExpression(indexer, new());
+            while (
                 CommonParsers.Spaces0(ref scanner, result, out _)
                 && Terminals.Char('.', ref scanner)
                 && CommonParsers.Spaces0(ref scanner, result, out _)
                 && LiteralsParser.Identifier(ref scanner, result, out var identifier)
             )
-            {
-                parsed = new AccessorExpression(increment, identifier, scanner.GetLocation(position, scanner.Position - position));
-                return true;
-            }
-            else
+                a.Accessed.Add(identifier);
+            if (a.Accessed.Count == 0)
             {
                 scanner.Position = position;
                 return false;
             }
+            else
+            {
+                a.Info = scanner.GetLocation(position, scanner.Position - position);
+                parsed = a;
+                return true;
+            }
         }
-        else {
+        else if (PostfixParser.Accessor(ref scanner, result, out var accessor))
+        {
+            var a = new AccessorExpression(indexer, new());
+            while (
+                CommonParsers.Spaces0(ref scanner, result, out _)
+                && Terminals.Char('.', ref scanner)
+                && CommonParsers.Spaces0(ref scanner, result, out _)
+                && LiteralsParser.Identifier(ref scanner, result, out var identifier)
+            )
+                a.Accessed.Add(identifier);
+            if (a.Accessed.Count == 0)
+            {
+                scanner.Position = position;
+                return false;
+            }
+            else
+            {
+                a.Info = scanner.GetLocation(position, scanner.Position - position);
+                parsed = a;
+                return true;
+            }
+        }
+        else
+        {
             scanner.Position = position;
             return false;
         }
