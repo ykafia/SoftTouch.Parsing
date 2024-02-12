@@ -4,259 +4,199 @@ namespace SoftTouch.Parsing.SDSL;
 
 public record struct PostfixParser : IParser<Expression>
 {
+
     public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
     {
-        if (Increment(ref scanner, result, out var nparsed))
+        var position = scanner.Position;
+        // If the following 
+        if (
+            Accessor(ref scanner, result, out parsed)
+            && CommonParsers.Spaces0(ref scanner, result, out _)
+        )
         {
-            parsed = nparsed;
-            return true;
+            if (Terminals.Set("[.", ref scanner) || Terminals.Literal("++", ref scanner) || Terminals.Literal("--", ref scanner))
+            {
+                if (Terminals.Char('.', ref scanner, advance: true))
+                {
+                    if (Postfix(ref scanner, result, out var accessed))
+                    {
+                        parsed = new AccessorExpression(parsed, accessed, scanner.GetLocation(position, scanner.Position));
+                        return true;
+                    }
+                    else
+                    {
+                        scanner.Position = position;
+                        return false;
+                    }
+                }
+                else if (Terminals.Char('[', ref scanner, advance: true))
+                {
+                    CommonParsers.Spaces0(ref scanner, result, out _);
+                    if (
+                        ExpressionParser.Expression(ref scanner, result, out var index)
+                        && CommonParsers.Spaces0(ref scanner, result, out _)
+                        && Terminals.Char(']', ref scanner, advance: true)
+                    )
+                    {
+                        parsed = new IndexerExpression(parsed, index, scanner.GetLocation(position, scanner.Position - position));
+                        return true;
+                    }
+                    else
+                    {
+                        scanner.Position = position;
+                        return false;
+                    }
+                }
+                else return false;
+            }
+            else return true;
         }
-        else if (Accessor(ref scanner, result, out var aparsed))
-        {
-            parsed = aparsed;
-            return true;
-        }
-        else if (Indexer(ref scanner, result, out var idparsed))
-        {
-            parsed = idparsed;
-            return true;
-        }
-        else if (PrimaryParsers.Primary(ref scanner, result, out parsed))
-            return true;
-        else
-        {
-            result.Errors.Add(new("Expected Postfix parser here", scanner.GetLocation(scanner.Position, 1)));
-            parsed = null!;
-            return false;
-        }
+        else return false;
+
+        // if (PrimaryParsers.Primary(ref scanner, result, out parsed) && CommonParsers.Spaces0(ref scanner, result, out _))
+        // {
+        //     CommonParsers.Spaces0(ref scanner, result, out _);
+        //     if (Terminals.Char('.', ref scanner, advance: true))
+        //     {
+        //         parsed = new AccessorExpression(parsed, new());
+        //         do
+        //         {
+        //             if(PrimaryParsers.Identifier(ref scanner, result, out var accessed))
+        //                 ((AccessorExpression)parsed).Accessed.Add(accessed);
+        //         }
+        //         while(Terminals.Char('.', ref scanner, advance: true));
+        //     }
+        //     else if(Terminals.Char('[', ref scanner, advance: true))
+        //     {
+        //         parsed = new IndexerExpression(parsed, new());
+        //         do
+        //         {
+        //             if (
+        //                 ExpressionParser.Expression(ref scanner, result, out var index)
+        //                 && Terminals.Char(']', ref scanner, advance: true)
+        //             )
+        //                 ((IndexerExpression)parsed).Indices.Add(index);
+        //         }
+        //         while (Terminals.Char('[', ref scanner, advance: true));
+        //     }
+        //     else if(Terminals.Literal("++", ref scanner, advance: true))
+        //     {
+        //         parsed = new PostfixExpression(parsed, Operator.Inc, new());
+        //         return true;
+        //     }
+        //     else if (Terminals.Literal("--", ref scanner, advance: true))
+        //     {
+        //         parsed = new PostfixExpression(parsed, Operator.Dec, new());
+        //         return false;
+        //     }
+
+        // }
+        // else 
+        // {
+        //     scanner.Position = position;
+        //     return false;
+        // }
     }
     public static bool Postfix(ref Scanner scanner, ParseResult result, out Expression parsed)
-            => new PostfixParser().Match(ref scanner, result, out parsed);
-    public static bool Increment(ref Scanner scanner, ParseResult result, out PostfixExpression parsed)
+        => new PostfixParser().Match(ref scanner, result, out parsed);
+    internal static bool Increment(ref Scanner scanner, ParseResult result, out Expression parsed)
         => new PostfixIncrementParser().Match(ref scanner, result, out parsed);
-    public static bool Accessor(ref Scanner scanner, ParseResult result, out PostfixExpression parsed)
+    internal static bool Accessor(ref Scanner scanner, ParseResult result, out Expression parsed)
         => new PostfixAccessorParser().Match(ref scanner, result, out parsed);
-    public static bool Indexer(ref Scanner scanner, ParseResult result, out PostfixExpression parsed)
+    internal static bool Indexer(ref Scanner scanner, ParseResult result, out Expression parsed)
         => new PostfixIndexerParser().Match(ref scanner, result, out parsed);
 }
 
-public record struct PostfixIncrementParser : IParser<PostfixExpression>
+
+public record struct PostfixAccessorParser : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out PostfixExpression parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
     {
         var position = scanner.Position;
+        if (PostfixParser.Indexer(ref scanner, result, out var expression))
+        {
+            var pos2 = scanner.Position;
+            CommonParsers.Spaces0(ref scanner, result, out _);
+            if (
+                Terminals.Char('.', ref scanner, advance: true)
+                && CommonParsers.Spaces0(ref scanner, result, out _)
+                && PostfixParser.Accessor(ref scanner, result, out var accessed))
+            {
+                parsed = new AccessorExpression(expression, accessed, scanner.GetLocation(position, scanner.Position - position));
+                return true;
+            }
+            else
+            {
+                scanner.Position = pos2;
+                parsed = expression;
+                return true;
+            }
+        }
         parsed = null!;
-        if (PostfixParser.Indexer(ref scanner, result, out var indexer))
-        {
-            if (
-                CommonParsers.Spaces0(ref scanner, result, out _)
-                && (Terminals.Literal("++", ref scanner) || Terminals.Literal("--", ref scanner))
-            )
-            {
-                var op = scanner.Span.Slice(scanner.Position, 2).ToOperator();
-                scanner.Advance(2);
-                parsed = new PostfixExpression(indexer, op, scanner.GetLocation(position, scanner.Position - position));
-                return true;
-            }
-            else
-            {
-                scanner.Position = position;
-                return false;
-            }
-        }
-        else if (PostfixParser.Accessor(ref scanner, result, out var accessor))
-        {
-            if (
-                CommonParsers.Spaces0(ref scanner, result, out _)
-                && (Terminals.Literal("++", ref scanner) || Terminals.Literal("--", ref scanner))
-            )
-            {
-                var op = scanner.Span.Slice(scanner.Position, 2).ToOperator();
-                scanner.Advance(2);
-                parsed = new PostfixExpression(accessor, op, scanner.GetLocation(position, scanner.Position - position));
-                return true;
-            }
-            else
-            {
-                scanner.Position = position;
-                return false;
-            }
-        }
-        if (LiteralsParser.Identifier(ref scanner, result, out var identifier))
-        {
-            if (
-                CommonParsers.Spaces0(ref scanner, result, out _)
-                && (Terminals.Literal("++", ref scanner) || Terminals.Literal("--", ref scanner))
-            )
-            {
-                var op = scanner.Span.Slice(scanner.Position, 2).ToOperator();
-                scanner.Advance(2);
-                parsed = new PostfixExpression(new ValueExpression(identifier), op, scanner.GetLocation(position, scanner.Position - position));
-                return true;
-            }
-            else
-            {
-                scanner.Position = position;
-                return false;
-            }
-        }
-        else
-        {
-            scanner.Position = position;
-            return false;
-        }
-    }
-}
-public record struct PostfixAccessorParser : IParser<PostfixExpression>
-{
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out PostfixExpression parsed)
-    {
-        var position = scanner.Position;
-        parsed = null!;
-        if (PostfixParser.Indexer(ref scanner, result, out var indexer))
-        {
-            var a = new AccessorExpression(indexer, new());
-            while (
-                CommonParsers.Spaces0(ref scanner, result, out _)
-                && Terminals.Char('.', ref scanner)
-                && CommonParsers.Spaces0(ref scanner, result, out _)
-                && LiteralsParser.Identifier(ref scanner, result, out var identifier)
-            )
-                a.Accessed.Add(identifier);
-            if (a.Accessed.Count == 0)
-            {
-                scanner.Position = position;
-                return false;
-            }
-            else
-            {
-                a.Info = scanner.GetLocation(position, scanner.Position - position);
-                parsed = a;
-                return true;
-            }
-        }
-        else if (PostfixParser.Increment(ref scanner, result, out var increment))
-        {
-            var a = new AccessorExpression(indexer, new());
-            while (
-                CommonParsers.Spaces0(ref scanner, result, out _)
-                && Terminals.Char('.', ref scanner)
-                && CommonParsers.Spaces0(ref scanner, result, out _)
-                && LiteralsParser.Identifier(ref scanner, result, out var identifier)
-            )
-                a.Accessed.Add(identifier);
-            if (a.Accessed.Count == 0)
-            {
-                scanner.Position = position;
-                return false;
-            }
-            else
-            {
-                a.Info = scanner.GetLocation(position, scanner.Position - position);
-                parsed = a;
-                return true;
-            }
-        }
-        else if (PostfixParser.Accessor(ref scanner, result, out var accessor))
-        {
-            var a = new AccessorExpression(indexer, new());
-            while (
-                CommonParsers.Spaces0(ref scanner, result, out _)
-                && Terminals.Char('.', ref scanner)
-                && CommonParsers.Spaces0(ref scanner, result, out _)
-                && LiteralsParser.Identifier(ref scanner, result, out var identifier)
-            )
-                a.Accessed.Add(identifier);
-            if (a.Accessed.Count == 0)
-            {
-                scanner.Position = position;
-                return false;
-            }
-            else
-            {
-                a.Info = scanner.GetLocation(position, scanner.Position - position);
-                parsed = a;
-                return true;
-            }
-        }
-        else
-        {
-            scanner.Position = position;
-            return false;
-        }
+        return false;
     }
 }
 
-public record struct PostfixIndexerParser : IParser<PostfixExpression>
+public record struct PostfixIndexerParser : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out PostfixExpression parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
+    {
+        var position = scanner.Position;
+
+        if (PrimaryParsers.Primary(ref scanner, result, out var expression))
+        {
+            var pos2 = scanner.Position;
+            CommonParsers.Spaces0(ref scanner, result, out _);
+            if (Terminals.Char('[', ref scanner, advance: true))
+            {
+                if (
+                    CommonParsers.Spaces0(ref scanner, result, out _)
+                    && ExpressionParser.Expression(ref scanner, result, out var index)
+                    && CommonParsers.Spaces0(ref scanner, result, out _)
+                    && Terminals.Char(']', ref scanner, advance: true)
+                )
+                {
+                    parsed = new IndexerExpression(expression, index, scanner.GetLocation(position, scanner.Position - position));
+                    return true;
+                }
+                else 
+                {
+                    result.Errors.Add(new("Expected accessor parser",scanner.GetLocation(scanner.Position, 1)));
+                    parsed = null!;
+                    return false;
+                }
+            }
+            else
+            {
+                scanner.Position = pos2;
+                parsed = expression;
+                return true;
+            }
+        }
+        parsed = null!;
+        return false;
+    }
+}
+
+public record struct PostfixIncrementParser : IParser<Expression>
+{
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
     {
         var position = scanner.Position;
         parsed = null!;
-        if (PostfixParser.Accessor(ref scanner, result, out var accesor))
-        {
-            if (
-                CommonParsers.Spaces0(ref scanner, result, out _)
-                && Terminals.Char('[', ref scanner)
-                && CommonParsers.Spaces0(ref scanner, result, out _)
-                && ExpressionParser.Expression(ref scanner, result, out var expression)
-                && CommonParsers.Spaces0(ref scanner, result, out _)
-                && Terminals.Char(']', ref scanner)
-            )
-            {
-                parsed = new IndexerExpression(accesor, expression, scanner.GetLocation(position, scanner.Position - position));
-                return true;
-            }
-            else
-            {
-                scanner.Position = position;
-                return false;
-            }
-        }
-        else if (PostfixParser.Indexer(ref scanner, result, out var indexer))
-        {
-            if (
-                CommonParsers.Spaces0(ref scanner, result, out _)
-                && Terminals.Char('[', ref scanner)
-                && CommonParsers.Spaces0(ref scanner, result, out _)
-                && ExpressionParser.Expression(ref scanner, result, out var expression)
-                && CommonParsers.Spaces0(ref scanner, result, out _)
-                && Terminals.Char(']', ref scanner)
-            )
-            {
-                parsed = new IndexerExpression(indexer, expression, scanner.GetLocation(position, scanner.Position - position));
-                return true;
-            }
-            else
-            {
-                scanner.Position = position;
-                return false;
-            }
-        }
-        else if (PostfixParser.Increment(ref scanner, result, out var increment))
-        {
-            if (
-                CommonParsers.Spaces0(ref scanner, result, out _)
-                && Terminals.Char('[', ref scanner)
-                && CommonParsers.Spaces0(ref scanner, result, out _)
-                && ExpressionParser.Expression(ref scanner, result, out var expression)
-                && CommonParsers.Spaces0(ref scanner, result, out _)
-                && Terminals.Char(']', ref scanner)
-            )
-            {
-                parsed = new IndexerExpression(increment, expression, scanner.GetLocation(position, scanner.Position - position));
-                return true;
-            }
-            else
-            {
-                scanner.Position = position;
-                return false;
-            }
-        }
-        else
-        {
-            scanner.Position = position;
-            return false;
-        }
+
+        // Machin[] a = [];
+        // var b = a[0].Chose[3][2].Age++;
+
+        // a :: Idx("a", "0")
+        // b :: Access(a, "Chose")
+        // c :: Idx(b, "3")
+        // d :: Idx(c, "2")
+        // e :: Access(d, "Age")
+        // f :: Inc(e, "++")
+
+        return false;
     }
 }
+
+

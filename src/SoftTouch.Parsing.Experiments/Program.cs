@@ -6,7 +6,7 @@ using SoftTouch.Parsing.SDSL.AST;
 
 
 Console.WriteLine(char.IsWhiteSpace('\n'));
-var result = Grammar.Match<ExpressionParser, Expression>("(int)machin");
+var result = Grammar.Match<PostfixParser, Expression>("machin.chose[3].something.else[3]");
 if(result.AST is not null)
     Console.WriteLine(result.AST);
 else

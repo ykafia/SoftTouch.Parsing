@@ -3,9 +3,9 @@ using SoftTouch.Parsing.SDSL.AST;
 namespace SoftTouch.Parsing.SDSL;
 
 
-public record struct PrefixParser : IParser<PrefixExpression>
+public record struct PrefixParser : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out PrefixExpression parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
     {
         var position = scanner.Position;
         if (UnaryParsers.PrefixIncrement(ref scanner, result, out parsed))
@@ -18,13 +18,18 @@ public record struct PrefixParser : IParser<PrefixExpression>
         // prefix cast 
         else if (UnaryParsers.Cast(ref scanner, result, out parsed))
             return true;
+        else if(UnaryParsers.Postfix(ref scanner, result, out var p))
+        {
+            parsed = p;
+            return true;            
+        }
         throw new NotImplementedException();
     }
 }
 
-public record struct PrefixIncrementParser : IParser<PrefixExpression>
+public record struct PrefixIncrementParser : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out PrefixExpression parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
     {
         var position = scanner.Position;
         if (Terminals.Literal("++", ref scanner, advance: true))
@@ -32,7 +37,7 @@ public record struct PrefixIncrementParser : IParser<PrefixExpression>
             CommonParsers.Spaces0(ref scanner, result, out _);
             if (UnaryParsers.Postfix(ref scanner, result, out var lit))
             {
-                parsed = new(Operator.Inc, lit, scanner.GetLocation(position, scanner.Position - position));
+                parsed = new PrefixExpression(Operator.Inc, lit, scanner.GetLocation(position, scanner.Position - position));
                 return true;
             }
             else
@@ -49,7 +54,7 @@ public record struct PrefixIncrementParser : IParser<PrefixExpression>
             CommonParsers.Spaces0(ref scanner, result, out _);
             if (UnaryParsers.Postfix(ref scanner, result, out var lit))
             {
-                parsed = new(Operator.Inc, lit, scanner.GetLocation(position, scanner.Position - position));
+                parsed = new PrefixExpression(Operator.Inc, lit, scanner.GetLocation(position, scanner.Position - position));
                 return true;
             }
             else
@@ -69,9 +74,9 @@ public record struct PrefixIncrementParser : IParser<PrefixExpression>
     }
 }
 
-public record struct NotExpressionParser : IParser<PrefixExpression>
+public record struct NotExpressionParser : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out PrefixExpression parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
     {
         parsed = null!;
         var position = scanner.Position;
@@ -82,7 +87,7 @@ public record struct NotExpressionParser : IParser<PrefixExpression>
             CommonParsers.Spaces0(ref scanner, result, out _);
             if (UnaryParsers.Postfix(ref scanner, result, out var lit))
             {
-                parsed = new(op, lit, scanner.GetLocation(position, scanner.Position - position));
+                parsed = new PrefixExpression(op, lit, scanner.GetLocation(position, scanner.Position - position));
                 return true;
             }
             else
@@ -97,9 +102,9 @@ public record struct NotExpressionParser : IParser<PrefixExpression>
     }
 }
 
-public record struct SignExpressionParser : IParser<PrefixExpression>
+public record struct SignExpressionParser : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out PrefixExpression parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
     {
         parsed = null!;
         var position = scanner.Position;
@@ -110,7 +115,7 @@ public record struct SignExpressionParser : IParser<PrefixExpression>
             CommonParsers.Spaces0(ref scanner, result, out _);
             if (UnaryParsers.Prefix(ref scanner, result, out var lit))
             {
-                parsed = new(op, lit, scanner.GetLocation(position, scanner.Position - position));
+                parsed = new PrefixExpression(op, lit, scanner.GetLocation(position, scanner.Position - position));
                 return true;
             }
             else
@@ -125,9 +130,9 @@ public record struct SignExpressionParser : IParser<PrefixExpression>
     }
 }
 
-public record struct CastExpressionParser : IParser<PrefixExpression>
+public record struct CastExpressionParser : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out PrefixExpression parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
     {
         var position = scanner.Position;
         if (

@@ -202,7 +202,7 @@ public readonly record struct IntegerSuffixParser() : ILiteralParser<Suffix>
 
 public record struct IdentifierParser() : ILiteralParser<Identifier>
 {
-    public bool Match(ref Scanner scanner, ParseResult result, out Identifier literal)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Identifier literal)
     {
         literal = null!;
         var position = scanner.Position;

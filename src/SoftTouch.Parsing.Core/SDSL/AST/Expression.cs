@@ -141,14 +141,23 @@ public class CastExpression(string typeName, Operator op, Expression expression,
 }
 
 public class PostfixExpression(Expression expression, Operator op, TextLocation info) : UnaryExpression(expression, op, info);
-public class AccessorExpression(Expression expression, TextLocation info) : PostfixExpression(expression, Operator.Accessor, info)
+public class AccessorExpression(Expression expression, Expression accessed, TextLocation info) : PostfixExpression(expression, Operator.Accessor, info)
 {
-    public List<Identifier> Accessed { get; set; } = [];
+    public Expression Accessed { get; set; } = accessed;
+
+    public override string ToString()
+    {
+        return $"{Expression}.{Accessed}";
+    }
 }
 
 public class IndexerExpression(Expression expression, Expression index, TextLocation info) : PostfixExpression(expression, Operator.Indexer, info)
 {
     public Expression Index { get; set; } = index;
+    public override string ToString()
+    {
+        return $"{Expression}[{Index}]";
+    }
 }
 
 
