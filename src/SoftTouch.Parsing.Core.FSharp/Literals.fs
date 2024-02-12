@@ -38,16 +38,13 @@ let integerParser (scanner : byref<Scanner>) (number : NumberLiteral outref) =
 
 let floatParser (scanner : byref<Scanner>) (number : NumberLiteral outref) = 
     let position = scanner.Position
-    printfn "char is %c" scanner.Span[scanner.Position]
     
     if nonZeroDigitTerminal &scanner true then
-        printfn "char is %c" scanner.Span[scanner.Position]
         while digitTerminal &scanner true do 
-            printfn "char is %c" scanner.Span[scanner.Position]
-            
+            ()
         if charTerminal '.' &scanner true then
             while digitTerminal &scanner true do 
-                printfn "char is %c" scanner.Span[scanner.Position]
+                ()
             let slice = scanner.BackSlice position
             number <- Float (parseFloat &slice, (scanner.GetBackLocation position))
         else 

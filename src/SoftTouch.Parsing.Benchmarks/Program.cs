@@ -1,10 +1,7 @@
 ﻿using SDSL.Parsing.Grammars.SDSL;
+using SDSL.Parsing.AST.Shader;
+using BenchmarkDotNet.Running;
+using SoftTouch.Parsing.Benchmarks;
 
 
-var grammar = new SDSLGrammar();
-
-
-grammar.Inner = grammar.OrExpression;
-
-grammar.Match("machin.chose[3].something.else[3]");
-
+BenchmarkRunner.Run<ParserBench>();

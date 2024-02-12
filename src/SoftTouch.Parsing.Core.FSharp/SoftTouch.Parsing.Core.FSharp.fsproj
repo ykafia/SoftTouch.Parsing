@@ -3,6 +3,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <FSharpLanguageVersion>5</FSharpLanguageVersion>
+    <PublishAot>true</PublishAot>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AST.fs" />
