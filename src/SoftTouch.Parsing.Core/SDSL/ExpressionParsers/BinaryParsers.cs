@@ -6,7 +6,7 @@ public struct ExpressionParser : IParser<Expression>
 {
     public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
     {
-        if(Or(ref scanner, result, out parsed))
+        if (Ternary(ref scanner, result, out parsed))
             return true;
         else return false;
     }
@@ -33,6 +33,54 @@ public struct ExpressionParser : IParser<Expression>
         => new AndParser().Match(ref scanner, result, out parsed);
     public static bool Or(ref Scanner scanner, ParseResult result, out Expression parsed)
         => new OrParser().Match(ref scanner, result, out parsed);
+    public static bool Ternary(ref Scanner scanner, ParseResult result, out Expression parsed)
+        => new TernaryParser().Match(ref scanner, result, out parsed);
+}
+
+
+public record struct TernaryParser : IParser<Expression>
+{
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
+    {
+        var position = scanner.Position;
+        if (ExpressionParser.Or(ref scanner, result, out parsed))
+        {
+            var pos2 = scanner.Position;
+            CommonParsers.Spaces0(ref scanner, result, out _);
+            if (Terminals.Char('?', ref scanner, advance: true))
+            {
+                CommonParsers.Spaces0(ref scanner, result, out _);
+                var pos3 = scanner.Position;
+                if (
+                    ExpressionParser.Expression(ref scanner, result, out var left)
+                    && CommonParsers.Spaces0(ref scanner, result, out _)
+                    && Terminals.Char(':', ref scanner, advance: true)
+                    && CommonParsers.Spaces0(ref scanner, result, out _)
+                    && ExpressionParser.Expression(ref scanner, result, out var right)
+                )
+                {
+                    parsed = new TernaryExpression(parsed, left, right, scanner.GetLocation(position, scanner.Position - position));
+                    return true;
+                }
+                else
+                {
+                    scanner.Position = pos3;
+                    result.Errors.Add(new("Expected ternary expression", new(scanner, scanner.Position)));
+                    return true;
+                }
+            }
+            else
+            {
+                scanner.Position = pos2;
+                return true;
+            }
+        }
+        else
+        {
+            scanner.Position = position;
+            return false;
+        }
+    }
 }
 
 public record struct OrParser() : IParser<Expression>
@@ -331,7 +379,7 @@ public record struct RelationalParser() : IParser<Expression>
         {
             ws0.Match(ref scanner, result, out _);
             if (
-                !Terminals.Literal(">=", ref scanner) && Terminals.Literal(">", ref scanner) 
+                !Terminals.Literal(">=", ref scanner) && Terminals.Literal(">", ref scanner)
                 || !Terminals.Literal("<=", ref scanner) && Terminals.Literal("<", ref scanner))
             {
                 var op = ((char)scanner.Peek()).ToOperator();
@@ -448,17 +496,17 @@ public record struct AdditionParser() : IParser<Expression>
         if (ExpressionParser.Mul(ref scanner, result, out var left))
         {
             ws0.Match(ref scanner, result, out _);
-            if(Terminals.Set("+-", ref scanner))
+            if (Terminals.Set("+-", ref scanner))
             {
                 var op = ((char)scanner.Peek()).ToOperator();
                 scanner.Advance(1);
                 ws0.Match(ref scanner, result, out _);
-                if(ExpressionParser.Add(ref scanner, result, out var add))
+                if (ExpressionParser.Add(ref scanner, result, out var add))
                 {
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else if(ExpressionParser.Mul(ref scanner, result, out var mul))
+                else if (ExpressionParser.Mul(ref scanner, result, out var mul))
                 {
                     parsed = new BinaryExpression(left, op, mul, scanner.GetLocation(position, scanner.Position - position));
                     return true;
@@ -468,9 +516,9 @@ public record struct AdditionParser() : IParser<Expression>
                     scanner.Position = position;
                     return false;
                 }
-                
+
             }
-            else 
+            else
             {
                 parsed = left;
                 return true;
@@ -505,7 +553,7 @@ public record struct MultiplicationParser() : IParser<Expression>
                     parsed = new BinaryExpression(left, op, expression, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else if(UnaryParsers.Prefix(ref scanner, result, out var right))
+                else if (UnaryParsers.Prefix(ref scanner, result, out var right))
                 {
                     parsed = new BinaryExpression(left, op, right, scanner.GetLocation(position, scanner.Position - position));
                     return true;

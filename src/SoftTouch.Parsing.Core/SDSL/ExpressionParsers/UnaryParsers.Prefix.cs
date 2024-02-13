@@ -44,7 +44,7 @@ public record struct PrefixIncrementParser : IParser<Expression>
             {
                 parsed = null!;
                 scanner.Position = position;
-                result.Errors.Add(new("Expecting Postfix expression", scanner.GetLocation(scanner.Position - 5, 5)));
+                result.Errors.Add(new("Expecting Postfix expression", new(scanner, position)));
                 return false;
             }
         }
@@ -61,7 +61,7 @@ public record struct PrefixIncrementParser : IParser<Expression>
             {
                 parsed = null!;
                 scanner.Position = position;
-                result.Errors.Add(new("Expecting Postfix expression", scanner.GetLocation(scanner.Position - 5, 5)));
+                result.Errors.Add(new("Expecting Postfix expression", new(scanner, position)));
                 return false;
             }
         }
@@ -94,7 +94,7 @@ public record struct NotExpressionParser : IParser<Expression>
             {
                 parsed = null!;
                 scanner.Position = position;
-                result.Errors.Add(new("Expecting Postfix expression", scanner.GetLocation(scanner.Position - 5, 5)));
+                result.Errors.Add(new("Expecting Postfix expression", new(scanner, position)));
                 return false;
             }
         }

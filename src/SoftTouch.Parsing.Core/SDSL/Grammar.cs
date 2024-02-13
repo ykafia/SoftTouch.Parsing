@@ -14,7 +14,7 @@ public static class Grammar
         if (p.Match(ref scanner, result, out var fnum))
             result.AST = fnum;
         if(!Terminals.EOF(ref scanner))
-            result.Errors.Add(new("Expected end of file", scanner.GetLocation(scanner.Position, 1)));
+            result.Errors.Add(new("Expected end of file", new(scanner, scanner.Position)));
         return result;
     }
 }

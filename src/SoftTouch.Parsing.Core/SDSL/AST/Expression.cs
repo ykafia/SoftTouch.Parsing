@@ -216,9 +216,22 @@ public class BinaryExpression(Expression left, Operator op, Expression right, Te
 
     public override string ToString()
     {
-        return $"({Left} {Op} {Right})";
+        return $"( {Left} {Op.ToSymbol()} {Right} )";
     }
 }
+
+public class TernaryExpression(Expression cond, Expression left, Expression right, TextLocation info) : Expression(info)
+{
+    public Expression Condition { get; set; } = cond;
+    public Expression Left { get; set; } = left;
+    public Expression Right { get; set; } = right;
+
+    public override string ToString()
+    {
+        return $"({Condition} ? {Left} : {Right})";
+    }
+}
+
 
 
 

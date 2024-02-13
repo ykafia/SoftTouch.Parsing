@@ -6,14 +6,14 @@ public readonly struct ErrorLocation
 {
     public readonly ReadOnlyMemory<char> Text { get; }
     public readonly int Position { get; }
-    private readonly int offset;
+    private readonly int leftOffset;
     private readonly int rightOffset;
     public ErrorLocation(Scanner scanner, int position)
     {
-        offset = Math.Max(-5, -position);
-        rightOffset = Math.Min(position + 5, scanner.Code.Length - 1);
+        leftOffset = position - 5 > 0 ? 5 : position;
+        rightOffset = position + 5 < scanner.Code.Length ? 5 : scanner.Code.Length - position - 1;
         Position = position;
-        Text = scanner.Memory[offset..rightOffset];
+        Text = scanner.Memory[(position - leftOffset)..(position + rightOffset)];
     }
 
     public override string ToString()
@@ -23,10 +23,10 @@ public readonly struct ErrorLocation
 }
 
 
-public class ParseError(string message, TextLocation location)
+public class ParseError(string message, ErrorLocation location)
 {
     public string Message { get; set; } = message;
-    public TextLocation Location { get; set; } = location;
+    public ErrorLocation Location { get; set; } = location;
 
     public override string ToString()
     {

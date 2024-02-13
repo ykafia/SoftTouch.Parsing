@@ -59,7 +59,7 @@ public record struct PostfixParser : IParser<Expression>
                 }
                 else 
                 {
-                    result.Errors.Add(new("Expected Postfix expression", scanner.GetLocation(scanner.Position, 1)));
+                    result.Errors.Add(new("Expected Postfix expression", new(scanner, position)));
                     return false;
                 }
             }
@@ -135,7 +135,7 @@ public record struct PostfixIndexerParser : IParser<Expression>
                 }
                 else 
                 {
-                    result.Errors.Add(new("Expected accessor parser",scanner.GetLocation(scanner.Position, 1)));
+                    result.Errors.Add(new("Expected accessor parser", new(scanner, position)));
                     parsed = null!;
                     return false;
                 }

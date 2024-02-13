@@ -87,7 +87,7 @@ public record struct MethodCallParser : IParser<Expression>
                 }
                 else
                 {
-                    result.Errors.Add(new("Expected parenthesis for closing method call",scanner.GetLocation(position, 1)));
+                    result.Errors.Add(new("Expected parenthesis for closing method call",new(scanner,position)));
                     scanner.Position = scanner.Code.Length;
                     parsed = null!;
                     return false;
@@ -97,7 +97,7 @@ public record struct MethodCallParser : IParser<Expression>
             {
                 
                 scanner.Position = position;
-                result.Errors.Add(new("Expected method call", scanner.GetLocation(position, 1)));
+                result.Errors.Add(new("Expected method call", new(scanner, position)));
                 scanner.Position = scanner.Code.Length;
                 parsed = null!;
                 return false;
