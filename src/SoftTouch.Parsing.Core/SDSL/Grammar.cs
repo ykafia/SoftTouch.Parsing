@@ -13,7 +13,8 @@ public static class Grammar
         var result = new ParseResult();
         if (p.Match(ref scanner, result, out var fnum))
             result.AST = fnum;
-        Terminals.EOF(ref scanner);
+        if(!Terminals.EOF(ref scanner))
+            result.Errors.Add(new("Expected end of file", scanner.GetLocation(scanner.Position, 1)));
         return result;
     }
 }

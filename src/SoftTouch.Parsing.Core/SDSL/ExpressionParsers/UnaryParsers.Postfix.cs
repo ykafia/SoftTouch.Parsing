@@ -47,55 +47,29 @@ public record struct PostfixParser : IParser<Expression>
                         return false;
                     }
                 }
-                else return false;
+                else if (Terminals.Literal("++", ref scanner, advance: true))
+                {
+                    parsed = new PostfixExpression(parsed, Operator.Inc, scanner.GetLocation(position, scanner.Position - position));
+                    return true;
+                }
+                else if (Terminals.Literal("--", ref scanner, advance: true))
+                {
+                    parsed = new PostfixExpression(parsed, Operator.Dec, scanner.GetLocation(position, scanner.Position - position));
+                    return true;
+                }
+                else 
+                {
+                    result.Errors.Add(new("Expected Postfix expression", scanner.GetLocation(scanner.Position, 1)));
+                    return false;
+                }
             }
             else return true;
         }
-        else return false;
-
-        // if (PrimaryParsers.Primary(ref scanner, result, out parsed) && CommonParsers.Spaces0(ref scanner, result, out _))
-        // {
-        //     CommonParsers.Spaces0(ref scanner, result, out _);
-        //     if (Terminals.Char('.', ref scanner, advance: true))
-        //     {
-        //         parsed = new AccessorExpression(parsed, new());
-        //         do
-        //         {
-        //             if(PrimaryParsers.Identifier(ref scanner, result, out var accessed))
-        //                 ((AccessorExpression)parsed).Accessed.Add(accessed);
-        //         }
-        //         while(Terminals.Char('.', ref scanner, advance: true));
-        //     }
-        //     else if(Terminals.Char('[', ref scanner, advance: true))
-        //     {
-        //         parsed = new IndexerExpression(parsed, new());
-        //         do
-        //         {
-        //             if (
-        //                 ExpressionParser.Expression(ref scanner, result, out var index)
-        //                 && Terminals.Char(']', ref scanner, advance: true)
-        //             )
-        //                 ((IndexerExpression)parsed).Indices.Add(index);
-        //         }
-        //         while (Terminals.Char('[', ref scanner, advance: true));
-        //     }
-        //     else if(Terminals.Literal("++", ref scanner, advance: true))
-        //     {
-        //         parsed = new PostfixExpression(parsed, Operator.Inc, new());
-        //         return true;
-        //     }
-        //     else if (Terminals.Literal("--", ref scanner, advance: true))
-        //     {
-        //         parsed = new PostfixExpression(parsed, Operator.Dec, new());
-        //         return false;
-        //     }
-
-        // }
-        // else 
-        // {
-        //     scanner.Position = position;
-        //     return false;
-        // }
+        else 
+        {
+            scanner.Position = position;
+            return false;
+        }
     }
     public static bool Postfix(ref Scanner scanner, ParseResult result, out Expression parsed)
         => new PostfixParser().Match(ref scanner, result, out parsed);
@@ -183,18 +157,22 @@ public record struct PostfixIncrementParser : IParser<Expression>
     public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
     {
         var position = scanner.Position;
+        if(PostfixParser.Accessor(ref scanner, result, out parsed))
+        {
+            var pos2 = scanner.Position;
+            CommonParsers.Spaces0(ref scanner, result, out _);
+            if(Terminals.Literal("++", ref scanner, advance: true))
+            {
+                parsed = new PostfixExpression(parsed, Operator.Inc, scanner.GetLocation(position, scanner.Position - position));
+                return true;
+            }
+            else
+            {
+                scanner.Position = pos2;
+                return true;
+            }
+        }
         parsed = null!;
-
-        // Machin[] a = [];
-        // var b = a[0].Chose[3][2].Age++;
-
-        // a :: Idx("a", "0")
-        // b :: Access(a, "Chose")
-        // c :: Idx(b, "3")
-        // d :: Idx(c, "2")
-        // e :: Access(d, "Age")
-        // f :: Inc(e, "++")
-
         return false;
     }
 }

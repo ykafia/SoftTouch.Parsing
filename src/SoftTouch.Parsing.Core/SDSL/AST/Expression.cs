@@ -101,6 +101,35 @@ public static class StringOperatorExtensions
             _ => Operator.Nop,
         };
     }
+    public static string ToSymbol(this Operator s)
+    {
+        return s switch
+        {
+            Operator.Not => "!",
+            Operator.BitwiseNot => "~",
+            Operator.Inc => "++",
+            Operator.Dec => "--",
+            Operator.Plus => "+",
+            Operator.Minus => "-",
+            Operator.Mul => "*",
+            Operator.Div => "/",
+            Operator.Mod => "%",
+            Operator.RightShift => ">>",
+            Operator.LeftShift => "<<",
+            Operator.AND => "&",
+            Operator.OR => "|",
+            Operator.XOR => "^",
+            Operator.Greater => ">",
+            Operator.Lower => "<",
+            Operator.GreaterOrEqual => ">=",
+            Operator.LowerOrEqual => "<=",
+            Operator.Equals => "==",
+            Operator.NotEquals => "!=",
+            Operator.LogicalAND => "&&",
+            Operator.LogicalOR => "||",
+            _ => "NOp"
+        };
+    }
 
     public static Operator ToOperator(this char c)
     {
@@ -126,6 +155,17 @@ public static class StringOperatorExtensions
 
 public abstract class Expression(TextLocation info) : ValueNode(info);
 
+public class MethodCall(Identifier name, TextLocation info) : Expression(info)
+{
+    public Identifier Name = name;
+    public List<Expression> Parameters = [];
+
+    public override string ToString()
+    {
+        return $"{Name}({string.Join(", ", Parameters)})";
+    }
+}
+
 
 public abstract class UnaryExpression(Expression expression, Operator op, TextLocation info) : Expression(info)
 {
@@ -140,7 +180,14 @@ public class CastExpression(string typeName, Operator op, Expression expression,
     public string TypeName { get; set; } = typeName;
 }
 
-public class PostfixExpression(Expression expression, Operator op, TextLocation info) : UnaryExpression(expression, op, info);
+public class PostfixExpression(Expression expression, Operator op, TextLocation info) : UnaryExpression(expression, op, info)
+{
+    public override string ToString()
+    {
+        return $"{Expression}{Operator.ToSymbol()}";
+    }
+}
+
 public class AccessorExpression(Expression expression, Expression accessed, TextLocation info) : PostfixExpression(expression, Operator.Accessor, info)
 {
     public Expression Accessed { get; set; } = accessed;
