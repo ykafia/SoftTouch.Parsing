@@ -23,7 +23,11 @@ public record struct PrefixParser : IParser<Expression>
             parsed = p;
             return true;            
         }
-        throw new NotImplementedException();
+        else {
+            parsed = null!;
+            scanner.Position = position;
+            return false;
+        }
     }
 }
 

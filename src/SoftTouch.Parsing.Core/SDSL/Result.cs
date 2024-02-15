@@ -8,17 +8,29 @@ public readonly struct ErrorLocation
     public readonly int Position { get; }
     private readonly int leftOffset;
     private readonly int rightOffset;
+    private readonly int line;
+    private readonly int column;
     public ErrorLocation(Scanner scanner, int position)
     {
+        // Getting the line and column at the position given.
+        // TODO: Make this a function in scanner
+        var pos = scanner.Position;
+        scanner.Position = position;
+        line = scanner.Line;
+        column = scanner.Column;
+        scanner.Position = pos;
+
+        // Setting other attributes
         leftOffset = position - 5 > 0 ? 5 : position;
         rightOffset = position + 5 < scanner.Code.Length ? 5 : scanner.Code.Length - position - 1;
         Position = position;
+        
         Text = scanner.Memory[(position - leftOffset)..(position + rightOffset)];
     }
 
     public override string ToString()
     {
-        return $"{Text[..5]}>>>{Text[5..]}";
+        return $"l{line}-c{column} : \n{Text[..5]}>>>{Text[5..]}";
     }
 }
 
@@ -39,10 +51,6 @@ public class ParseResult<T>
     where T : Node
 {
     public T? AST { get; set; }
-    public List<ParseError> Errors { get; } = [];
+    public List<ParseError> Errors { get; internal set; } = [];
 }
-public class ParseResult : ParseResult<Node>
-{
-    public Node? AST { get; set; }
-    public List<ParseError> Errors { get; } = [];
-}
+public class ParseResult : ParseResult<Node>;

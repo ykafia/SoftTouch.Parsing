@@ -1,0 +1,7 @@
+{
+    int a;
+    /* block comment
+    This is a beautiful block comment
+    */
+    int b;
+}

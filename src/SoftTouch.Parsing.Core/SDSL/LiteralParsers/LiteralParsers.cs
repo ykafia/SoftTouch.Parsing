@@ -28,9 +28,6 @@ public record struct LiteralsParser : IParser<Literal>
         {
             literal = null!;
             scanner.Position = position;
-            result.Errors.Add(
-                new($"expected : Identifier | Literal", new(scanner, position))
-            );
             return false;
         }
     }
