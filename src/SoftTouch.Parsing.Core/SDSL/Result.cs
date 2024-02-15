@@ -35,12 +35,9 @@ public readonly struct ErrorLocation
 }
 
 
-public class ParseError(string message, ErrorLocation location)
+public record struct ParseError(string Message, ErrorLocation Location)
 {
-    public string Message { get; set; } = message;
-    public ErrorLocation Location { get; set; } = location;
-
-    public override string ToString()
+    public override readonly string ToString()
     {
         return $"{Message} at : {Location}";
     }

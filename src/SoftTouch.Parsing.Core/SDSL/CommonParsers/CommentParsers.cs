@@ -5,7 +5,7 @@ namespace SoftTouch.Parsing.SDSL;
 
 public record struct CodeNodeParsers : IParser<CodeSnippets>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out CodeSnippets parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out CodeSnippets parsed, in ParseError? error = null)
     {
         parsed = new();
         while(!scanner.IsEof)

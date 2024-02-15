@@ -11,7 +11,7 @@ public interface ILiteralParser<TResult>
 
 public record struct LiteralsParser : IParser<Literal>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Literal literal)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Literal literal, in ParseError? orError = null)
     {
         var position = scanner.Position;
         if(Identifier(ref scanner, result, out var i))
@@ -26,6 +26,8 @@ public record struct LiteralsParser : IParser<Literal>
         }
         else 
         {
+            if (orError is not null)
+                result.Errors.Add(orError.Value);
             literal = null!;
             scanner.Position = position;
             return false;

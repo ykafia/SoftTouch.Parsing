@@ -5,7 +5,7 @@ namespace SoftTouch.Parsing.SDSL;
 
 public record struct StatementParsers : IParser<Statement>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Statement parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Statement parsed, in ParseError? orError = null)
     {
         if (Expression(ref scanner, result, out parsed))
             return true;
@@ -19,6 +19,8 @@ public record struct StatementParsers : IParser<Statement>
             return true;
         else if (Block(ref scanner, result, out parsed))
             return true;
+        if (orError is not null)
+                result.Errors.Add(orError.Value);
         return false;
     }
     internal static bool Statement(ref Scanner scanner, ParseResult result, out Statement parsed)
@@ -40,7 +42,7 @@ public record struct StatementParsers : IParser<Statement>
 
 public record struct ReturnStatementParser : IParser<Statement>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Statement parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Statement parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
         if (
@@ -72,6 +74,8 @@ public record struct ReturnStatementParser : IParser<Statement>
         }
         else
         {
+            if (orError is not null)
+                result.Errors.Add(orError.Value);
             scanner.Position = position;
             parsed = null!;
             return false;
@@ -81,7 +85,7 @@ public record struct ReturnStatementParser : IParser<Statement>
 
 public record struct BreakParser : IParser<Statement>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Statement parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Statement parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
         if (
@@ -95,6 +99,8 @@ public record struct BreakParser : IParser<Statement>
         }
         else
         {
+            if (orError is not null)
+                result.Errors.Add(orError.Value);
             scanner.Position = position;
             parsed = null!;
             return false;
@@ -103,7 +109,7 @@ public record struct BreakParser : IParser<Statement>
 }
 public record struct ContinueParser : IParser<Statement>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Statement parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Statement parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
         if (
@@ -117,6 +123,8 @@ public record struct ContinueParser : IParser<Statement>
         }
         else
         {
+            if (orError is not null)
+                result.Errors.Add(orError.Value);
             scanner.Position = position;
             parsed = null!;
             return false;
@@ -126,7 +134,7 @@ public record struct ContinueParser : IParser<Statement>
 
 public record struct ExpressionStatementParser : IParser<Statement>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Statement parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Statement parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
         if (
@@ -140,6 +148,8 @@ public record struct ExpressionStatementParser : IParser<Statement>
         }
         else
         {
+            if (orError is not null)
+                result.Errors.Add(orError.Value);
             scanner.Position = position;
             parsed = null!;
             return false;
@@ -150,7 +160,7 @@ public record struct ExpressionStatementParser : IParser<Statement>
 
 public record struct DeclareStatementParser : IParser<Statement>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Statement parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Statement parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
         if (
@@ -166,6 +176,8 @@ public record struct DeclareStatementParser : IParser<Statement>
         }
         else
         {
+            if (orError is not null)
+                result.Errors.Add(orError.Value);
             scanner.Position = position;
             parsed = null!;
             return false;
@@ -175,7 +187,7 @@ public record struct DeclareStatementParser : IParser<Statement>
 
 public record struct DeclareAssignStatementParser : IParser<Statement>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Statement parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Statement parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
         if (
@@ -195,6 +207,8 @@ public record struct DeclareAssignStatementParser : IParser<Statement>
         }
         else
         {
+            if (orError is not null)
+                result.Errors.Add(orError.Value);
             scanner.Position = position;
             parsed = null!;
             return false;
@@ -205,7 +219,7 @@ public record struct DeclareAssignStatementParser : IParser<Statement>
 
 public record struct BlockStatementParser : IParser<Statement>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Statement parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Statement parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
         if (Terminals.Char('{', ref scanner, advance: true) && CommonParsers.Spaces0(ref scanner, result, out _))
@@ -232,6 +246,8 @@ public record struct BlockStatementParser : IParser<Statement>
         }
         else
         {
+            if (orError is not null)
+                result.Errors.Add(orError.Value);
             scanner.Position = position;
             parsed = null!;
             return false;

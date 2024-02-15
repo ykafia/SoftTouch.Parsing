@@ -5,7 +5,7 @@ namespace SoftTouch.Parsing.SDSL;
 
 public record struct PrefixParser : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
         if (UnaryParsers.PrefixIncrement(ref scanner, result, out parsed))
@@ -18,12 +18,15 @@ public record struct PrefixParser : IParser<Expression>
         // prefix cast 
         else if (UnaryParsers.Cast(ref scanner, result, out parsed))
             return true;
-        else if(UnaryParsers.Postfix(ref scanner, result, out var p))
+        else if (UnaryParsers.Postfix(ref scanner, result, out var p))
         {
             parsed = p;
-            return true;            
+            return true;
         }
-        else {
+        else
+        {
+            if (orError is not null)
+                result.Errors.Add(orError.Value);
             parsed = null!;
             scanner.Position = position;
             return false;
@@ -33,7 +36,7 @@ public record struct PrefixParser : IParser<Expression>
 
 public record struct PrefixIncrementParser : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
         if (Terminals.Literal("++", ref scanner, advance: true))
@@ -71,6 +74,8 @@ public record struct PrefixIncrementParser : IParser<Expression>
         }
         else
         {
+            if(orError is not null)
+                result.Errors.Add(orError.Value);
             scanner.Position = position;
             parsed = null!;
             return false;
@@ -80,7 +85,7 @@ public record struct PrefixIncrementParser : IParser<Expression>
 
 public record struct NotExpressionParser : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         parsed = null!;
         var position = scanner.Position;
@@ -102,13 +107,18 @@ public record struct NotExpressionParser : IParser<Expression>
                 return false;
             }
         }
-        else return false;
+        else 
+        {
+            if (orError is not null)
+                result.Errors.Add(orError.Value with { Location = new(scanner, position) });
+            return false;
+        }
     }
 }
 
 public record struct SignExpressionParser : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         parsed = null!;
         var position = scanner.Position;
@@ -125,18 +135,25 @@ public record struct SignExpressionParser : IParser<Expression>
             else
             {
                 // TODO: check if error can be added here
+                if (orError is not null)
+                    result.Errors.Add(orError.Value with { Location = new(scanner, position) });
                 parsed = null!;
                 scanner.Position = position;
                 return false;
             }
         }
-        else return false;
+        else 
+        {
+            if (orError is not null)
+                result.Errors.Add(orError.Value with { Location = new(scanner, position) });
+            return false;
+        }
     }
 }
 
 public record struct CastExpressionParser : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
         if (
@@ -153,6 +170,8 @@ public record struct CastExpressionParser : IParser<Expression>
         }
         else
         {
+            if (orError is not null)
+                result.Errors.Add(orError.Value with { Location = new(scanner, position) });
             parsed = null!;
             scanner.Position = position;
             return false;
