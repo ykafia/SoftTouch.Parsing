@@ -96,7 +96,7 @@ public record struct PostfixAccessorParser : IParser<Expression>
             if (
                 Terminals.Char('.', ref scanner, advance: true)
                 && CommonParsers.Spaces0(ref scanner, result, out _)
-                && PostfixParser.Accessor(ref scanner, result, out var accessed))
+                && PostfixParser.Accessor(ref scanner, result, out var accessed, new("Expected accessor expression", new(scanner, scanner.Position))))
             {
                 parsed = new AccessorExpression(expression, accessed, scanner.GetLocation(position, scanner.Position - position));
                 return true;
@@ -129,7 +129,7 @@ public record struct PostfixIndexerParser : IParser<Expression>
             {
                 if (
                     CommonParsers.Spaces0(ref scanner, result, out _)
-                    && ExpressionParser.Expression(ref scanner, result, out var index)
+                    && ExpressionParser.Expression(ref scanner, result, out var index, new("Expected expression", new(scanner, scanner.Position)))
                     && CommonParsers.Spaces0(ref scanner, result, out _)
                     && Terminals.Char(']', ref scanner, advance: true)
                 )

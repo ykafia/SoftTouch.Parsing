@@ -52,27 +52,18 @@ public record struct TernaryParser : IParser<Expression>
         {
             var pos2 = scanner.Position;
             CommonParsers.Spaces0(ref scanner, result, out _);
-            if (Terminals.Char('?', ref scanner, advance: true))
+            if (
+                Terminals.Char('?', ref scanner, advance: true)
+                && CommonParsers.Spaces0(ref scanner, result, out _)
+                && ExpressionParser.Expression(ref scanner, result, out var left, new("Expected expression", new(scanner, scanner.Position)))
+                && CommonParsers.Spaces0(ref scanner, result, out _)
+                && Terminals.Char(':', ref scanner, advance: true)
+                && CommonParsers.Spaces0(ref scanner, result, out _)
+                && ExpressionParser.Expression(ref scanner, result, out var right, new("Expected expression", new(scanner, scanner.Position)))
+            )
             {
-                CommonParsers.Spaces0(ref scanner, result, out _);
-                var pos3 = scanner.Position;
-                if (
-                    ExpressionParser.Expression(ref scanner, result, out var left)
-                    && CommonParsers.Spaces0(ref scanner, result, out _)
-                    && Terminals.Char(':', ref scanner, advance: true)
-                    && CommonParsers.Spaces0(ref scanner, result, out _)
-                    && ExpressionParser.Expression(ref scanner, result, out var right)
-                )
-                {
-                    parsed = new TernaryExpression(parsed, left, right, scanner.GetLocation(position, scanner.Position - position));
-                    return true;
-                }
-                else
-                {
-                    scanner.Position = pos3;
-                    result.Errors.Add(new("Expected ternary expression", new(scanner, scanner.Position)));
-                    return true;
-                }
+                parsed = new TernaryExpression(parsed, left, right, scanner.GetLocation(position, scanner.Position - position));
+                return true;
             }
             else
             {

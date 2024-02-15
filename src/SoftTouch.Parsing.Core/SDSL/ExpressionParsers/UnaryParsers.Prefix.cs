@@ -159,7 +159,7 @@ public record struct CastExpressionParser : IParser<Expression>
         if (
                 Terminals.Char('(', ref scanner, advance: true)
                 && CommonParsers.Spaces0(ref scanner, result, out _)
-                && LiteralsParser.Identifier(ref scanner, result, out var typeName)
+                && LiteralsParser.Identifier(ref scanner, result, out var typeName, new("Expected identifier", new(scanner, scanner.Position)))
                 && CommonParsers.Spaces0(ref scanner, result, out _)
                 && Terminals.Char(')', ref scanner, true)
                 && UnaryParsers.Postfix(ref scanner, result, out var lit)
