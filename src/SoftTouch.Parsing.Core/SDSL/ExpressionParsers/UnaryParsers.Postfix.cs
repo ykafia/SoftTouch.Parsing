@@ -5,7 +5,7 @@ namespace SoftTouch.Parsing.SDSL;
 public record struct PostfixParser : IParser<Expression>
 {
 
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
         // If the following 
@@ -67,24 +67,26 @@ public record struct PostfixParser : IParser<Expression>
         }
         else 
         {
+            if (orError is not null)
+                result.Errors.Add(orError.Value);
             scanner.Position = position;
             return false;
         }
     }
-    public static bool Postfix(ref Scanner scanner, ParseResult result, out Expression parsed)
-        => new PostfixParser().Match(ref scanner, result, out parsed);
-    internal static bool Increment(ref Scanner scanner, ParseResult result, out Expression parsed)
-        => new PostfixIncrementParser().Match(ref scanner, result, out parsed);
-    internal static bool Accessor(ref Scanner scanner, ParseResult result, out Expression parsed)
-        => new PostfixAccessorParser().Match(ref scanner, result, out parsed);
-    internal static bool Indexer(ref Scanner scanner, ParseResult result, out Expression parsed)
-        => new PostfixIndexerParser().Match(ref scanner, result, out parsed);
+    public static bool Postfix(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        => new PostfixParser().Match(ref scanner, result, out parsed, in orError);
+    internal static bool Increment(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        => new PostfixIncrementParser().Match(ref scanner, result, out parsed, in orError);
+    internal static bool Accessor(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        => new PostfixAccessorParser().Match(ref scanner, result, out parsed, in orError);
+    internal static bool Indexer(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        => new PostfixIndexerParser().Match(ref scanner, result, out parsed, in orError);
 }
 
 
 public record struct PostfixAccessorParser : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
         if (PostfixParser.Indexer(ref scanner, result, out var expression))
@@ -106,6 +108,8 @@ public record struct PostfixAccessorParser : IParser<Expression>
                 return true;
             }
         }
+        if (orError is not null)
+                result.Errors.Add(orError.Value);
         parsed = null!;
         return false;
     }
@@ -113,7 +117,7 @@ public record struct PostfixAccessorParser : IParser<Expression>
 
 public record struct PostfixIndexerParser : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
 
@@ -147,6 +151,8 @@ public record struct PostfixIndexerParser : IParser<Expression>
                 return true;
             }
         }
+        if (orError is not null)
+                result.Errors.Add(orError.Value);
         parsed = null!;
         return false;
     }
@@ -154,7 +160,7 @@ public record struct PostfixIndexerParser : IParser<Expression>
 
 public record struct PostfixIncrementParser : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
         if(PostfixParser.Accessor(ref scanner, result, out parsed))
@@ -172,6 +178,8 @@ public record struct PostfixIncrementParser : IParser<Expression>
                 return true;
             }
         }
+        if (orError is not null)
+                result.Errors.Add(orError.Value);
         parsed = null!;
         return false;
     }

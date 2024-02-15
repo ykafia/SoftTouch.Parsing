@@ -47,7 +47,7 @@ public record struct ReturnStatementParser : IParser<Statement>
         var position = scanner.Position;
         if (
             Terminals.Literal("return", ref scanner, advance: true)
-            && CommonParsers.Spaces1(ref scanner, result, out _)
+            && CommonParsers.Spaces1(ref scanner, result, out _, new("Expected at least one space", new(scanner,scanner.Position)))
         )
         {
             if (Terminals.Char(';', ref scanner, advance: true))
@@ -165,8 +165,8 @@ public record struct DeclareStatementParser : IParser<Statement>
         var position = scanner.Position;
         if (
             LiteralsParser.Identifier(ref scanner, result, out var typeName)
-            && CommonParsers.Spaces1(ref scanner, result, out _)
-            && LiteralsParser.Identifier(ref scanner, result, out var variableName)
+            && CommonParsers.Spaces1(ref scanner, result, out _, new("Expected at least one space", new(scanner, scanner.Position)))
+            && LiteralsParser.Identifier(ref scanner, result, out var variableName, new("Expected an identifier", new(scanner, scanner.Position)))
             && CommonParsers.Spaces0(ref scanner, result, out _)
             && Terminals.Char(';', ref scanner, advance: true)
         )
@@ -192,12 +192,12 @@ public record struct DeclareAssignStatementParser : IParser<Statement>
         var position = scanner.Position;
         if (
             LiteralsParser.Identifier(ref scanner, result, out var typeName)
-            && CommonParsers.Spaces1(ref scanner, result, out _)
+            && CommonParsers.Spaces1(ref scanner, result, out _, new("Expected at least one space", new(scanner, scanner.Position)))
             && LiteralsParser.Identifier(ref scanner, result, out var variableName)
             && CommonParsers.Spaces0(ref scanner, result, out _)
             && Terminals.Char('=', ref scanner, advance: true)
             && CommonParsers.Spaces0(ref scanner, result, out _)
-            && ExpressionParser.Expression(ref scanner, result, out var value)
+            && ExpressionParser.Expression(ref scanner, result, out var value, new("Expected a value expression", new(scanner, scanner.Position)))
             && CommonParsers.Spaces0(ref scanner, result, out _)
             && Terminals.Char(';', ref scanner, advance: true)
         )

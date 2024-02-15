@@ -5,7 +5,7 @@ namespace SoftTouch.Parsing.SDSL;
 
 public struct NumberParser : IParser<NumberLiteral>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out NumberLiteral parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out NumberLiteral parsed, in ParseError? orError = null)
     {
         var fp = new FloatParser();
         var ip = new IntegerParser();
@@ -20,6 +20,8 @@ public struct NumberParser : IParser<NumberLiteral>
             parsed = pi;
             return true;
         }
+        if (orError is not null)
+            result.Errors.Add(orError.Value);
         parsed = null!;
         return false;
     }
@@ -27,14 +29,14 @@ public struct NumberParser : IParser<NumberLiteral>
 
 public struct IntegerParser : IParser<IntegerLiteral>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out IntegerLiteral node)
-       
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out IntegerLiteral node, in ParseError? orError = null)
+
     {
         var position = scanner.Position;
         IntegerSuffixParser suffix = new();
         if (Terminals.Digit(ref scanner, DigitMode.ExceptZero, advance: true))
         {
-            while (Terminals.Digit(ref scanner, advance: true));
+            while (Terminals.Digit(ref scanner, advance: true)) ;
 
             var numPos = scanner.Position;
             if (suffix.Match(ref scanner, null!, out Suffix suf))
@@ -49,16 +51,21 @@ public struct IntegerParser : IParser<IntegerLiteral>
                 return true;
             }
         }
-        node = new(new(), 0, new());
-        scanner.Position = position;
-        return false;
+        else
+        {
+            node = null!;
+            if (orError is not null)
+                result.Errors.Add(orError.Value);
+            scanner.Position = position;
+            return false;
+        }
     }
 }
 
 public struct FloatParser : IParser<FloatLiteral>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out FloatLiteral node)
-       
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out FloatLiteral node, in ParseError? orError = null)
+
     {
         var position = scanner.Position;
         node = null!;
@@ -66,19 +73,19 @@ public struct FloatParser : IParser<FloatLiteral>
         if (Terminals.Char('.', ref scanner))
         {
             scanner.Advance(1);
-            while (Terminals.Digit(ref scanner, advance:true));
-            
+            while (Terminals.Digit(ref scanner, advance: true)) ;
+
             if (suffix.Match(ref scanner, result, out Suffix s))
                 node = new FloatLiteral(s, double.Parse(scanner.Span[position..scanner.Position]), new(scanner.Line, scanner.Column - (scanner.Position - position), scanner.Memory[position..scanner.Position]));
             return true;
         }
         else if (Terminals.Digit(ref scanner, DigitMode.ExceptZero, advance: true))
         {
-            while (Terminals.Digit(ref scanner, advance: true));
+            while (Terminals.Digit(ref scanner, advance: true)) ;
             Suffix s = new(32, true, true);
             if (Terminals.Char('.', ref scanner, advance: true))
             {
-                while (Terminals.Digit(ref scanner, advance: true));
+                while (Terminals.Digit(ref scanner, advance: true)) ;
             }
             else if (!suffix.Match(ref scanner, result, out s))
             {
@@ -102,14 +109,16 @@ public struct FloatParser : IParser<FloatLiteral>
             if (Terminals.Char('.', ref scanner, advance: true))
             {
                 while (Terminals.Digit(ref scanner, advance: true))
-                if (!suffix.Match(ref scanner, result, out s))
-                    s = new(32, true, true);
+                    if (!suffix.Match(ref scanner, result, out s))
+                        s = new(32, true, true);
             }
             node = new FloatLiteral(s, double.Parse(scanner.Span[position..scanner.Position]), new(scanner.Line, scanner.Column - (scanner.Position - position), scanner.Memory[position..scanner.Position]));
             return true;
         }
-        else 
+        else
         {
+            if (orError is not null)
+                result.Errors.Add(orError.Value);
             scanner.Position = position;
             return false;
         }
@@ -117,21 +126,21 @@ public struct FloatParser : IParser<FloatLiteral>
 }
 public struct HexParser : IParser<HexLiteral>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out HexLiteral node)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out HexLiteral node, in ParseError? orError = null)
     {
         node = null!;
         var position = scanner.Position;
-        if(Terminals.Literal("0x", ref scanner, advance: true))
+        if (Terminals.Literal("0x", ref scanner, advance: true))
         {
-            while(Terminals.Set("abcdefABCDEF", ref scanner, advance: true) || Terminals.Digit(ref scanner, advance: true));
+            while (Terminals.Set("abcdefABCDEF", ref scanner, advance: true) || Terminals.Digit(ref scanner, advance: true)) ;
 
             ulong sum = 0;
 
-            for(int i = 0; i < scanner.Position - position - 2; i+=1)
+            for (int i = 0; i < scanner.Position - position - 2; i += 1)
             {
                 var v = Hex2int(scanner.Span[i]);
                 var add = v * Math.Pow(16, i);
-                if(ulong.MaxValue - sum < add)
+                if (ulong.MaxValue - sum < add)
                 {
                     result.Errors.Add(new ParseError("Hex value bigger than ulong.", new(scanner, position)));
                     return false;
@@ -140,7 +149,12 @@ public struct HexParser : IParser<HexLiteral>
             node = new HexLiteral(sum, scanner.GetLocation(position, scanner.Position - position));
             return true;
         }
-        else return false;
+        else
+        {
+            if (orError is not null)
+                result.Errors.Add(orError.Value);
+            return false;
+        }
     }
 
     static int Hex2int(char ch)

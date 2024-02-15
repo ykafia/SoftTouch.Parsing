@@ -5,7 +5,7 @@ namespace SoftTouch.Parsing.SDSL;
 
 public record struct PrimaryParsers : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         if(Parenthesis(ref scanner, result, out parsed))
             return true;
@@ -16,34 +16,41 @@ public record struct PrimaryParsers : IParser<Expression>
             parsed = new ValueExpression(lit);
             return true;
         }
-        else return false;
+        else 
+        {
+            if (orError is not null)
+                result.Errors.Add(orError.Value);
+            return false;
+        }
     }
-    public static bool Primary(ref Scanner scanner, ParseResult result, out Expression parsed)
-            => new PrimaryParsers().Match(ref scanner, result, out parsed);
+    public static bool Primary(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+            => new PrimaryParsers().Match(ref scanner, result, out parsed, in orError);
     public static bool Identifier(ref Scanner scanner, ParseResult result, out Identifier parsed)
             => new IdentifierParser().Match(ref scanner, result, out parsed);
-    public static bool Method(ref Scanner scanner, ParseResult result, out Expression parsed)
-        => new MethodCallParser().Match(ref scanner, result, out parsed);
-    public static bool Parenthesis(ref Scanner scanner, ParseResult result, out Expression parsed)
-        => new ParenthesisExpressionParser().Match(ref scanner, result, out parsed);
+    public static bool Method(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        => new MethodCallParser().Match(ref scanner, result, out parsed, in orError);
+    public static bool Parenthesis(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        => new ParenthesisExpressionParser().Match(ref scanner, result, out parsed, in orError);
 }
 
 
 public record struct ParenthesisExpressionParser : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
         if(
             Terminals.Char('(', ref scanner, advance: true)
             && CommonParsers.Spaces0(ref scanner, result, out _)
-            && ExpressionParser.Expression(ref scanner, result, out parsed)
+            && ExpressionParser.Expression(ref scanner, result, out parsed, new("Expected expression value", new(scanner, position)))
             && CommonParsers.Spaces0(ref scanner, result, out _)
             && Terminals.Char(')', ref scanner, advance: true)
         )
             return true;
         else 
         {
+            if(orError != null)
+                result.Errors.Add(orError.Value);
             parsed = null!;
             scanner.Position = position;
             return false;
@@ -53,7 +60,7 @@ public record struct ParenthesisExpressionParser : IParser<Expression>
 
 public record struct MethodCallParser : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
         if (
@@ -105,6 +112,8 @@ public record struct MethodCallParser : IParser<Expression>
         }
         else
         {
+            if (orError is not null)
+                result.Errors.Add(orError.Value);
             parsed = null!;
             scanner.Position = position;
             return false;

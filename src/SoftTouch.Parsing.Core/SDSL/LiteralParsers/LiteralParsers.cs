@@ -33,10 +33,16 @@ public record struct LiteralsParser : IParser<Literal>
             return false;
         }
     }
-    public static bool Literal(ref Scanner scanner, ParseResult result, out Literal literal) => new LiteralsParser().Match(ref scanner, result, out literal);
-    public static bool Identifier(ref Scanner scanner, ParseResult result, out Identifier identifier) => new IdentifierParser().Match(ref scanner, result, out identifier);
-    public static bool Number(ref Scanner scanner, ParseResult result, out NumberLiteral number) => new NumberParser().Match(ref scanner, result, out number);
-    public static bool Operator(ref Scanner scanner, ParseResult result, out Operator op) => new OperatorParser().Match(ref scanner, result, out op);
+    public static bool Literal(ref Scanner scanner, ParseResult result, out Literal literal, in ParseError? orError = null) => new LiteralsParser().Match(ref scanner, result, out literal, in orError);
+    public static bool Identifier(ref Scanner scanner, ParseResult result, out Identifier identifier, in ParseError? orError = null)
+    {
+        if(new IdentifierParser().Match(ref scanner, result, out identifier))
+            return true;
+        else if(orError != null)
+            result.Errors.Add(orError.Value);
+        return false;
+    }
+    public static bool Number(ref Scanner scanner, ParseResult result, out NumberLiteral number, in ParseError? orError = null) => new NumberParser().Match(ref scanner, result, out number, in orError);
 }
 
 
