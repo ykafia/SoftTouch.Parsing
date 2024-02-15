@@ -13,6 +13,11 @@ public class ExpressionStatement(Expression expression, TextLocation info) : Sta
     }
 }
 
+public class Return(TextLocation info, Expression? expression = null) : Statement(info)
+{
+    public Expression? Value { get; set; } = expression;
+}
+
 public class Declare(Identifier typename, Identifier name, TextLocation info) : Statement(info)
 {
     public Identifier TypeName { get; set; } = typename;

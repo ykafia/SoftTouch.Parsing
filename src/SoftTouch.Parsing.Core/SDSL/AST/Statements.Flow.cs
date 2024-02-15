@@ -3,6 +3,9 @@ namespace SoftTouch.Parsing.SDSL.AST;
 public abstract class Flow(TextLocation info) : Statement(info);
 
 public abstract class Loop(TextLocation info) : Flow(info);
+public class Break(TextLocation info) : Statement(info);
+public class Continue(TextLocation info) : Statement(info);
+
 
 public class ForEach(Identifier typename, Identifier variable, Expression collection, TextLocation info) : Loop(info)
 {
@@ -45,3 +48,4 @@ public class For(ForInitializer initializer, Expression cond, Statement update, 
     public List<Statement> Body { get; set; } = [];
     public List<ForAnnotation> Annotations { get; set; } = [];
 }
+
