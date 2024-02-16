@@ -13,7 +13,7 @@ var uncommented = Grammar.MatchTyped<CodeNodeParsers, CodeSnippets>(File.ReadAll
 // Console.WriteLine(uncommented);
 if (uncommented != null)
 {
-    var result = Grammar.Match<StatementParsers, Statement>(uncommented);
+    var result = Grammar.Match<ShaderMethodParsers, ShaderElement>(uncommented);
     if (result.AST is not null)
         Console.WriteLine(result.AST);
     foreach (var e in result.Errors)

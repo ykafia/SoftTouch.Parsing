@@ -2,3 +2,6 @@ bin/
 obj/
 .vs/
 .fake
+__pycache__/
+.pytest_cache/
+log*.txt

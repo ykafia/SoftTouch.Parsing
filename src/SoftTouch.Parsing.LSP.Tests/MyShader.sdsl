@@ -1,0 +1,4 @@
+shader MyShader
+{
+    int a;
+}
