@@ -3,6 +3,6 @@ shader MyShader
     void MyMethod()
     {
         int a = 0;
-        int b = a;
+        int b = (a - 10 / 3 ) * 32 +( streams.color.Normalize()[2] + 2);
     }
 }

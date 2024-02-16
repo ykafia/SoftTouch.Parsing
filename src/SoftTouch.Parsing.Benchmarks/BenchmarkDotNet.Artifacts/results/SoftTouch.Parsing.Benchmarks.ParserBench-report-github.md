@@ -8,7 +8,7 @@ Intel Core i5-8265U CPU 1.60GHz (Whiskey Lake), 1 CPU, 8 logical and 4 physical 
 
 
 ```
-| Method         | Mean      | Error     | StdDev    | Median    | Gen0   | Allocated |
-|--------------- |----------:|----------:|----------:|----------:|-------:|----------:|
-| StrideParse    | 42.467 μs | 2.7278 μs | 8.0431 μs | 38.792 μs | 7.6904 |  23.73 KB |
-| SoftTouchParse |  1.680 μs | 0.0864 μs | 0.2451 μs |  1.573 μs | 0.4139 |   1.27 KB |
+| Method         | Mean      | Error    | StdDev    | Gen0    | Allocated |
+|--------------- |----------:|---------:|----------:|--------:|----------:|
+| StrideParse    | 111.11 μs | 3.679 μs | 10.497 μs | 13.4277 |  41.66 KB |
+| SoftTouchParse |  10.95 μs | 0.267 μs |  0.749 μs |  1.5106 |   4.65 KB |

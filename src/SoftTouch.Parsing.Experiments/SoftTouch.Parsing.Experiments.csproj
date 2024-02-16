@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SoftTouch.Parsing.Core\SoftTouch.Parsing.Core.csproj" />
+    <ProjectReference Include="..\..\submodules\SDSL\src\SDSL\SDSL.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

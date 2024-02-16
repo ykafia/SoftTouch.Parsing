@@ -15,8 +15,17 @@ public class ParserBench
     public ParserBench()
     {
         eto = new();
-        eto.Inner = eto.PrimaryExpression;
-        toparse = "machin.chose[3].something.else[3]";
+        eto.Inner = eto.ShaderExpression;
+        toparse = """
+shader MyShader
+{
+    void MyMethod()
+    {
+        int a = 0;
+        int b = (a - 10 / 3 ) * 32 +( 8 % streams.color.Normalize() + 2 << 5);
+    }
+}
+""";
         // Grammar.Match<PostfixParser, Expression>("machin.chose[3].something.else[3]");
     }
 
@@ -30,6 +39,6 @@ public class ParserBench
     [Benchmark]
     public void SoftTouchParse()
     {
-        var expression = Grammar.Match<ExpressionParser, SDSL.AST.Expression>(toparse);
+        var expression = Grammar.Match<ShaderClassParsers, SDSL.AST.ShaderClass>(toparse);
     }
 }

@@ -13,9 +13,29 @@ var uncommented = Grammar.MatchTyped<CodeNodeParsers, CodeSnippets>(File.ReadAll
 // Console.WriteLine(uncommented);
 if (uncommented != null)
 {
-    var result = Grammar.Match<ShaderMethodParsers, ShaderElement>(uncommented);
+    var result = Grammar.Match<ShaderClassParsers, ShaderClass>(uncommented);
     if (result.AST is not null)
         Console.WriteLine(result.AST);
     foreach (var e in result.Errors)
         Console.WriteLine(e);
+}
+
+TryOldSDSL();
+static void TryOldSDSL()
+{
+    var parser = new SDSL.Parsing.Grammars.SDSL.SDSLGrammar();
+    var match = parser.Match(
+"""
+shader MyShader
+{
+    void MyMethod()
+    {
+        int a = 0;
+        int b = (a - 10 / 3 ) * 32 +( 8 % streams.color.Normalize() + 2 << 5);
+    }
+}
+"""
+    );
+    var program = SDSL.Parsing.AST.Shader.ShaderToken.Tokenize(match);
+    var x = 0;
 }

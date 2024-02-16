@@ -30,12 +30,19 @@ public record struct SimpleShaderClassParser : IParser<ShaderClass>
             && CommonParsers.Spaces0(ref scanner, result, out _)
             && Terminals.Char('{', ref scanner, advance: true)
             && CommonParsers.Spaces0(ref scanner, result, out _)
-            // TODO Parse shader elements
-            && CommonParsers.Spaces0(ref scanner, result, out _)
-            && Terminals.Char('}', ref scanner, advance: true)
+            
         )
         {
-            parsed = new ShaderClass(className, scanner.GetLocation(position, scanner.Position - position));
+            var c = new ShaderClass(className, scanner.GetLocation(position, scanner.Position - position));
+            while(!Terminals.Char('}', ref scanner, advance: true))
+            {
+                if(ShaderElementParsers.ShaderElement(ref scanner, result, out var e))
+                {
+                    c.Elements.Add(e);
+                }
+                CommonParsers.Spaces0(ref scanner, result, out _);
+            }
+            parsed = c;
             return true;
         }
         else

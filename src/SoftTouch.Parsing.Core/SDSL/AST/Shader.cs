@@ -7,6 +7,19 @@ public class ShaderClass(Identifier name, TextLocation info) : Node(info)
     public List<ShaderElement> Elements { get; set; } = [];
     public List<ShaderGenerics> Generics { get; set; } = [];
     public List<ShaderMixin> Mixins { get; set; } = [];
+
+
+    public override string ToString()
+    {
+        return
+$"""
+Class : {Name}
+Generics : {string.Join(", ", Generics)}
+Inherits from : {string.Join(", ", Mixins)}
+Body :
+{string.Join("\n", Elements)}
+""";
+    }
 }
 
 
@@ -16,8 +29,9 @@ public class ShaderGenerics(Identifier typename, Identifier name, TextLocation i
     public Identifier TypeName { get; set; } = typename;
 }
 
-public class ShaderMixin(TextLocation info) : Node(info)
+public class ShaderMixin(Identifier name, TextLocation info) : Node(info)
 {
+    public Identifier Name { get; set; } = name;
     public List<ShaderMixinValue> Generics { get; set; } = [];
 }
 

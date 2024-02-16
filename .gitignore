@@ -5,3 +5,4 @@ obj/
 __pycache__/
 .pytest_cache/
 log*.txt
+SoftTouch.*.log
