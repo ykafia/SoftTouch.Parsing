@@ -13,6 +13,8 @@ public record struct ShaderClassParsers : IParser<ShaderClass>
         else 
             return false;
     }
+    public static bool Class(ref Scanner scanner, ParseResult result, out ShaderClass parsed, in ParseError? orError = null)
+        => new ShaderClassParsers().Match(ref scanner, result, out parsed, in orError);
     public static bool SimpleClass(ref Scanner scanner, ParseResult result, out ShaderClass parsed, in ParseError? orError = null)
         => new SimpleShaderClassParser().Match(ref scanner, result, out parsed, in orError);
 }

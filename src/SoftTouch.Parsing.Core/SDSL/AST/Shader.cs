@@ -1,6 +1,30 @@
 namespace SoftTouch.Parsing.SDSL.AST;
 
 
+
+public class ShaderFile(TextLocation info) : Node(info)
+{
+    public List<ShaderClass> RootClasses { get; set; } = [];
+    public List<ShaderNamespace> Namespaces { get; set; } = [];
+
+    public override string ToString()
+    {
+        return $"{string.Join("\n", RootClasses)}\n\n{string.Join("\n", Namespaces)}";
+    }
+}
+
+public class ShaderNamespace(TextLocation info) : Node(info)
+{
+    public List<Identifier> NamespacePath { get; set; } = [];
+    public string? Namespace { get; set; }
+    public List<ShaderClass> ShaderClasses { get; set; } = [];
+
+    public override string ToString()
+    {
+        return $"namespace {string.Join(".", NamespacePath)}\nBlock\n{string.Join("\n", ShaderClasses)}End\n";
+    }
+}
+
 public class ShaderClass(Identifier name, TextLocation info) : Node(info)
 {
     public Identifier Name { get; set; } = name;

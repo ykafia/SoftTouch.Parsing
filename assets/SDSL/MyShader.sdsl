@@ -1,8 +1,12 @@
-shader MyShader
+namespace MyNamespace.SoftTouch.Hello
 {
-    void MyMethod()
+
+    shader MyShader
     {
-        int a = 0;
-        int b = (a - 10 / 3 ) * 32 +( streams.color.Normalize()[2] + 2);
+        void MyMethod()
+        {
+            int a = 0;
+            int b = (a - 10 / 3 ) * 32 +( streams.color.Normalize()[2] + 2);
+        }
     }
 }
