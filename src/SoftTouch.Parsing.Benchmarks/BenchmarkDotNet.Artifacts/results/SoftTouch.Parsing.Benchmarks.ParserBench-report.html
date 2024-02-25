@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>SoftTouch.Parsing.Benchmarks.ParserBench-20240216-161830</title>
+<title>SoftTouch.Parsing.Benchmarks.ParserBench-20240225-160331</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -13,19 +13,22 @@
 </head>
 <body>
 <pre><code>
-BenchmarkDotNet v0.13.12, Windows 10 (10.0.19045.3930/22H2/2022Update)
-Intel Core i5-8265U CPU 1.60GHz (Whiskey Lake), 1 CPU, 8 logical and 4 physical cores
-.NET SDK 8.0.100
-  [Host]     : .NET 8.0.0 (8.0.23.53103), X64 RyuJIT AVX2
-  DefaultJob : .NET 8.0.0 (8.0.23.53103), X64 RyuJIT AVX2
+BenchmarkDotNet v0.13.12, Windows 11 (10.0.22621.2861/22H2/2022Update/SunValley2)
+AMD Ryzen 5 3500U with Radeon Vega Mobile Gfx, 1 CPU, 8 logical and 4 physical cores
+.NET SDK 8.0.200
+  [Host]        : .NET 8.0.2 (8.0.224.6711), X64 RyuJIT AVX2
+  .NET 8.0      : .NET 8.0.2 (8.0.224.6711), X64 RyuJIT AVX2
+  NativeAOT 8.0 : .NET 8.0.2, X64 NativeAOT AVX2
 </code></pre>
 <pre><code></code></pre>
 
 <table>
-<thead><tr><th>Method  </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Allocated</th>
+<thead><tr><th>Method  </th><th>Job    </th><th>Runtime</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Median</th><th>Gen0</th><th>Allocated</th>
 </tr>
-</thead><tbody><tr><td>StrideParse</td><td>111.11 &mu;s</td><td>3.679 &mu;s</td><td>10.497 &mu;s</td><td>13.4277</td><td>41.66 KB</td>
-</tr><tr><td>SoftTouchParse</td><td>10.95 &mu;s</td><td>0.267 &mu;s</td><td>0.749 &mu;s</td><td>1.5106</td><td>4.65 KB</td>
+</thead><tbody><tr><td>StrideParse</td><td>.NET 8.0</td><td>.NET 8.0</td><td>94.97 &mu;s</td><td>4.438 &mu;s</td><td>13.016 &mu;s</td><td>94.82 &mu;s</td><td>20.2637</td><td>41.66 KB</td>
+</tr><tr><td>SoftTouchParse</td><td>.NET 8.0</td><td>.NET 8.0</td><td>10.31 &mu;s</td><td>0.242 &mu;s</td><td>0.703 &mu;s</td><td>10.44 &mu;s</td><td>2.2736</td><td>4.65 KB</td>
+</tr><tr><td>StrideParse</td><td>NativeAOT 8.0</td><td>NativeAOT 8.0</td><td>105.68 &mu;s</td><td>2.391 &mu;s</td><td>6.859 &mu;s</td><td>104.48 &mu;s</td><td>20.2637</td><td>41.59 KB</td>
+</tr><tr><td>SoftTouchParse</td><td>NativeAOT 8.0</td><td>NativeAOT 8.0</td><td>12.94 &mu;s</td><td>0.257 &mu;s</td><td>0.601 &mu;s</td><td>12.62 &mu;s</td><td>2.2736</td><td>4.65 KB</td>
 </tr></tbody></table>
 </body>
 </html>
