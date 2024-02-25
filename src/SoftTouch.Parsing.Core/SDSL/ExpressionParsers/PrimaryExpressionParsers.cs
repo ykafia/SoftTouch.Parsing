@@ -81,10 +81,17 @@ public record struct MethodCallParser : IParser<Expression>
                 var method = new MethodCall(identifier, scanner.GetLocation(position, scanner.Position - position));
                 method.Parameters.Add(first);
                 CommonParsers.Spaces0(ref scanner, result, out _);
-                while(Terminals.Char(',', ref scanner, advance: true) && CommonParsers.Spaces0(ref scanner, result, out _))
+                while(!scanner.IsEof && Terminals.Char(',', ref scanner, advance: true) && CommonParsers.Spaces0(ref scanner, result, out _))
                 {
                     if(ExpressionParser.Expression(ref scanner, result, out var param))
                         method.Parameters.Add(param);
+                    else 
+                    {
+                        result.Errors.Add(new("Expected expression value", new(scanner, scanner.Position)));
+                        scanner.Position = scanner.Code.Length;
+                        parsed = null!;
+                        return false;
+                    }
                     CommonParsers.Spaces0(ref scanner, result, out _);
                 }
                 if(Terminals.Char(')', ref scanner, advance: true))

@@ -1,6 +1,5 @@
 namespace SoftTouch.Parsing.SDSL;
 
-
 public struct Scanner(string code)
 {
 
@@ -106,3 +105,6 @@ public struct Scanner(string code)
         return new(Line, Column, Memory.Slice(position, length));
     }
 }
+
+
+

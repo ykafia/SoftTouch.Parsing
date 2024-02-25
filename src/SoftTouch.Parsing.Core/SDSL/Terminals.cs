@@ -13,7 +13,7 @@ public static class Terminals
     public static bool Digit(ref Scanner scanner, DigitMode mode = DigitMode.All, bool advance = false) => new DigitTerminalParser(mode).Match(ref scanner, advance);
     public static bool Letter(ref Scanner scanner, bool advance = false) => new LetterTerminalParser().Match(ref scanner, advance);
     public static bool LetterOrDigit(ref Scanner scanner, bool advance = false) => new LetterOrDigitTerminalParser().Match(ref scanner, advance);
-    public static bool EOL(ref Scanner scanner) => new EOLTerminalParser().Match(ref scanner, false);
+    public static bool EOL(ref Scanner scanner, bool advance = false) => new EOLTerminalParser().Match(ref scanner, advance);
     public static bool EOF(ref Scanner scanner) => new EOFTerminalParser().Match(ref scanner, false);
 }
 
@@ -130,13 +130,13 @@ public record struct EOLTerminalParser() : ITerminal
 {
     public readonly bool Match(ref Scanner scanner, bool advance)
     {
-        if((char)scanner.Peek() == '\n')
-        {
-            if(advance)
-                scanner.Advance(1);
-            return true;
-        }
-        return (char)scanner.Peek() == '\n';
+        var position = scanner.Position;
+        while(scanner.Peek() == ' ')
+            scanner.Advance(1);
+        var result = scanner.Peek() == '\n';
+        if(!advance && result)
+            scanner.Position = position;
+        return result;
     }
 }
 

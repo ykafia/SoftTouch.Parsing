@@ -226,7 +226,7 @@ public record struct BlockStatementParser : IParser<Statement>
         {
             var block = new BlockStatement(new());
 
-            while (!Terminals.Char('}', ref scanner, advance: true))
+            while (!scanner.IsEof && !Terminals.Char('}', ref scanner, advance: true))
             {
                 if (StatementParsers.Statement(ref scanner, result, out var statement))
                 {
@@ -236,6 +236,7 @@ public record struct BlockStatementParser : IParser<Statement>
                 else
                 {
                     result.Errors.Add(new("Expected Statement", new ErrorLocation(scanner, scanner.Position)));
+                    scanner.Position = scanner.Code.Length;
                     parsed = null!;
                     return false;
                 }

@@ -52,12 +52,15 @@ public record struct NamespaceParsers : IParser<ShaderNamespace>
             do
             {
                 if (LiteralsParser.Identifier(ref scanner, result, out var identifier))
-                {
                     ns.NamespacePath.Add(identifier);
+                else 
+                {
+                    result.Errors.Add(new("Expected identifier", new(scanner,scanner.Position)));
+                    scanner.Position = scanner.Code.Length;
                 }
                 CommonParsers.Spaces0(ref scanner, result, out _);
             }
-            while (Terminals.Char('.', ref scanner, advance: true));
+            while (!scanner.IsEof && Terminals.Char('.', ref scanner, advance: true));
             if(ns.NamespacePath.Count > 0)
                 ns.Namespace = string.Join(".", ns.NamespacePath);
             if (Terminals.Char(';', ref scanner, advance: true))
@@ -71,10 +74,17 @@ public record struct NamespaceParsers : IParser<ShaderNamespace>
             else if (Terminals.Char('{', ref scanner, advance: true))
             {
                 CommonParsers.Spaces0(ref scanner, result, out _);
-                while (!Terminals.Char('}', ref scanner, advance: true) && ShaderClassParsers.Class(ref scanner, result, out var shader))
+                while (!scanner.IsEof && !Terminals.Char('}', ref scanner, advance: true))
                 {
-                    ns.ShaderClasses.Add(shader);
-                    CommonParsers.Spaces0(ref scanner, result, out _);
+                    if(ShaderClassParsers.Class(ref scanner, result, out var shader) && CommonParsers.Spaces0(ref scanner, result, out _))
+                        ns.ShaderClasses.Add(shader);
+                    else 
+                    {
+                        result.Errors.Add(new("Expected shader class", new(scanner, scanner.Position)));
+                        scanner.Position = scanner.Code.Length;
+                        parsed = null!;
+                        return false;
+                    }
                 }
             }
             else
