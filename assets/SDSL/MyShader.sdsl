@@ -1,7 +1,12 @@
 namespace MyNamespace.SoftTouch.Hello
 {
+#ifdef SHADER
+    shader Parent 
+    {
+        stream int a;
+    }
 
-    shader MyShader
+    shader MyShader : Parent
     {
         void MyMethod()
         {
@@ -9,4 +14,5 @@ namespace MyNamespace.SoftTouch.Hello
             int b = (a - 10 / 3 ) * 32 +( streams.color.Normalize()[2] + 2);
         }
     }
+#endif
 }

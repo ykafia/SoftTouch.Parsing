@@ -81,12 +81,3 @@ public class TernaryExpression(Expression cond, Expression left, Expression righ
         return $"({Condition} ? {Left} : {Right})";
     }
 }
-
-
-
-
-public class ValueExpression(Literal value) : Expression(value.Info)
-{
-    public Literal Value { get; set; } = value;
-    public override string ToString() => Value.ToString() ?? "";
-}
