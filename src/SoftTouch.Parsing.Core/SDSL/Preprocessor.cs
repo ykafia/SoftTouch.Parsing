@@ -6,47 +6,110 @@ using SoftTouch.Parsing.SDSL.AST;
 
 namespace SoftTouch.Parsing.SDSL;
 
-public class PreProcessor(Dictionary<string, Literal>? parameters = null)
+
+
+public class PreProcessor(Dictionary<string, Literal>? parameters = null) : IDisposable
 {
     public List<TextLocation> CodeFragments { get; } = [];
     public Dictionary<string, Literal> Variables { get; } = parameters ?? [];
+    public PreProcessorBuffer buffer = new();
 
-    public string PreProcess(params string[] shaderFiles)
+    public PreProcessor With(string file)
     {
-        StringBuilder sansCommentBuilder = new();
+        buffer.Add(file);
+        return this;
+    }
+    public PreProcessor With(ReadOnlyMemory<char> file)
+    {
+        buffer.Add(file);
+        return this;
+    }
+    public PreProcessor With(ReadOnlySpan<char> file)
+    {
+        buffer.Add(file);
+        return this;
+    }
+
+    public string PreProcess()
+    {
         // Comment preprocess
         var commentLine = new LiteralTerminalParser("//");
         var commentBlockStart = new LiteralTerminalParser("/*");
         var commentBlockEnd = new LiteralTerminalParser("*/");
-        foreach (var code in shaderFiles)
-        {
-            var scanner = new Scanner(code);
+    
+        var scanner = new Scanner(buffer.Memory);
 
-            while (!scanner.IsEof)
-            {
-                var curPos = scanner.Position;
-                if (
-                    CommonParsers.Until<LiteralTerminalParser, LiteralTerminalParser>(
-                        ref scanner,
-                        commentLine,
-                        commentBlockStart
-                    )
+        while (!scanner.IsEof)
+        {
+            var curPos = scanner.Position;
+            if (
+                CommonParsers.Until<LiteralTerminalParser, LiteralTerminalParser>(
+                    ref scanner,
+                    commentLine,
+                    commentBlockStart
                 )
+            )
+            {
+                if (Terminals.Literal("//", ref scanner))
                 {
-                    sansCommentBuilder.Append(scanner.Span[curPos..scanner.Position]);
-                    if (Terminals.Literal("//", ref scanner))
-                        CommonParsers.Until(ref scanner, '\n', advance: true);
-                    else if (Terminals.Literal("/*", ref scanner))
-                        CommonParsers.Until(ref scanner, "*/", advance: true);
-                    else throw new NotImplementedException();
-                    curPos = scanner.Position;
+                    var pos = scanner.Position;
+                    CommonParsers.Until(ref scanner, '\n', advance: true);
+                    buffer.Trim(pos, scanner.Position - pos);
                 }
-                else 
-                    sansCommentBuilder.Append(code);
+                else if (Terminals.Literal("/*", ref scanner))
+                {
+                    var pos = scanner.Position;
+                    CommonParsers.Until(ref scanner, "*/", advance: true);
+                    buffer.Trim(pos, scanner.Position - pos);
+                }
+                else throw new NotImplementedException();
             }
         }
-        var sansComment = sansCommentBuilder.ToString();
-        var macroScanner = new Scanner(sansComment);
+        // How to parse 
+        scanner.Position = 0;
+        var result = new ParseResult();
+
+        // while(!scanner.IsEof)
+        // {
+        //     // Try parse directive
+        //     // If match, evaluate directive
+        //     // If evaluate to true continue
+        //     // If not, skip code block until next directive
+        //     var pos = scanner.Position;
+        //     CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+        //     if(Terminals.Literal("#define", ref scanner, advance: true))
+        //     {
+        //         // Replace all occurences of the define value with the new value
+        //     }
+        //     else if (Terminals.Literal("#ifdef", ref scanner, advance: true))
+        //     {
+        //         if(
+        //             CommonParsers.Spaces1(ref scanner, result, out _, onlyWhiteSpace: true)
+        //             && LiteralsParser.Identifier(ref scanner, result, out var identifier)
+        //             && Terminals.EOL(ref scanner, advance: true)
+        //         )
+        //         {
+        //             if(Variables.ContainsKey(identifier.Name))
+        //             {
+
+        //             }
+        //         }
+        //         else throw new NotImplementedException();
+        //         // If the value is defined then skip to the next directive
+        //     }
+        //     else if (Terminals.Literal("#ifndef", ref scanner, advance: true))
+        //     {
+
+        //     }
+        //     else if(Terminals.Literal("#if", ref scanner, advance: true))
+        //     {
+
+        //     }
+
+
+        // }
+        // var sansComment = sansCommentBuilder.ToString();
+        // var macroScanner = new Scanner(sansComment);
         // var result = new ParseResult();
         // new ShaderFileParser().Match(ref shaderScanner, result, out var ast);
         // {
@@ -64,7 +127,7 @@ public class PreProcessor(Dictionary<string, Literal>? parameters = null)
             //     }
             // }
         // }
-        return "";
+        return buffer.Span.ToString();
     }
 
     public bool Evaluate(Expression expression)
@@ -128,5 +191,5 @@ public class PreProcessor(Dictionary<string, Literal>? parameters = null)
         };
     }
 
-
+    public void Dispose() => buffer.Dispose();
 }

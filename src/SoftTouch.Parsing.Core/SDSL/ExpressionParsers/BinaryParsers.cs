@@ -94,7 +94,7 @@ public record struct OrParser() : IParser<Expression>
             ws0.Match(ref scanner, result, out _);
             if (Terminals.Literal("||", ref scanner))
             {
-                var op = scanner.Span.Slice(scanner.Position, 2).ToOperator();
+                var op = scanner.Code.Slice(scanner.Position, 2).ToOperator();
                 scanner.Advance(2);
                 ws0.Match(ref scanner, result, out _);
                 if (ExpressionParser.Or(ref scanner, result, out var shift))
@@ -143,7 +143,7 @@ public record struct AndParser() : IParser<Expression>
             ws0.Match(ref scanner, result, out _);
             if (Terminals.Literal("&&", ref scanner))
             {
-                var op = scanner.Span.Slice(scanner.Position, 2).ToOperator();
+                var op = scanner.Code.Slice(scanner.Position, 2).ToOperator();
                 scanner.Advance(2);
                 ws0.Match(ref scanner, result, out _);
                 if (ExpressionParser.BAnd(ref scanner, result, out var shift))
@@ -341,7 +341,7 @@ public record struct EqualityParser() : IParser<Expression>
             ws0.Match(ref scanner, result, out _);
             if (Terminals.Literal("==", ref scanner) || Terminals.Literal("!=", ref scanner))
             {
-                var op = scanner.Span.Slice(scanner.Position, 2).ToOperator();
+                var op = scanner.Code.Slice(scanner.Position, 2).ToOperator();
                 scanner.Advance(2);
                 ws0.Match(ref scanner, result, out _);
                 if (ExpressionParser.Equality(ref scanner, result, out var shift))
@@ -414,7 +414,7 @@ public record struct RelationalParser() : IParser<Expression>
             }
             else if (Terminals.Literal(">=", ref scanner) || Terminals.Literal("<=", ref scanner))
             {
-                var op = scanner.Span.Slice(scanner.Position, 2).ToOperator();
+                var op = scanner.Code.Slice(scanner.Position, 2).ToOperator();
                 scanner.Advance(2);
                 ws0.Match(ref scanner, result, out _);
                 if (ExpressionParser.Relation(ref scanner, result, out var shift))
@@ -463,7 +463,7 @@ public record struct BitwiseShiftParser() : IParser<Expression>
             ws0.Match(ref scanner, result, out _);
             if (Terminals.Literal(">>", ref scanner) || Terminals.Literal("<<", ref scanner))
             {
-                var op = scanner.Span.Slice(scanner.Position, 2).ToOperator();
+                var op = scanner.Code.Slice(scanner.Position, 2).ToOperator();
                 scanner.Advance(2);
                 ws0.Match(ref scanner, result, out _);
                 if (ExpressionParser.Shift(ref scanner, result, out var shift))

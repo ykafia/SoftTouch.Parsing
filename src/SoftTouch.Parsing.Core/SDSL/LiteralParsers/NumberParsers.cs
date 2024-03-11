@@ -41,7 +41,7 @@ public struct IntegerParser : IParser<IntegerLiteral>
             var numPos = scanner.Position;
             if (suffix.Match(ref scanner, null!, out Suffix suf))
             {
-                node = new(suf, long.Parse(scanner.Span[position..numPos]), scanner.GetLocation(position, scanner.Position));
+                node = new(suf, long.Parse(scanner.Code[position..numPos]), scanner.GetLocation(position, scanner.Position));
                 return true;
             }
             else
@@ -76,7 +76,7 @@ public struct FloatParser : IParser<FloatLiteral>
             while (Terminals.Digit(ref scanner, advance: true)) ;
 
             if (suffix.Match(ref scanner, result, out Suffix s))
-                node = new FloatLiteral(s, double.Parse(scanner.Span[position..scanner.Position]), new(scanner.Line, scanner.Column - (scanner.Position - position), scanner.Memory[position..scanner.Position]));
+                node = new FloatLiteral(s, double.Parse(scanner.Code[position..scanner.Position]), new(scanner.Line, scanner.Column - (scanner.Position - position), scanner.Memory[position..scanner.Position]));
             return true;
         }
         else if (Terminals.Digit(ref scanner, DigitMode.ExceptZero, advance: true))
@@ -93,12 +93,12 @@ public struct FloatParser : IParser<FloatLiteral>
                 return false;
             }
             var len = 0;
-            foreach (var e in scanner.Span[position..scanner.Position])
+            foreach (var e in scanner.Code[position..scanner.Position])
                 if (!char.IsDigit(e))
                     break;
                 else
                     len += 1;
-            node = new FloatLiteral(s, double.Parse(scanner.Span[position..len]), new(scanner.Line, scanner.Column - (scanner.Position - position), scanner.Memory[position..scanner.Position]));
+            node = new FloatLiteral(s, double.Parse(scanner.Code[position..len]), new(scanner.Line, scanner.Column - (scanner.Position - position), scanner.Memory[position..scanner.Position]));
 
             return true;
         }
@@ -112,7 +112,7 @@ public struct FloatParser : IParser<FloatLiteral>
                     if (!suffix.Match(ref scanner, result, out s))
                         s = new(32, true, true);
             }
-            node = new FloatLiteral(s, double.Parse(scanner.Span[position..scanner.Position]), new(scanner.Line, scanner.Column - (scanner.Position - position), scanner.Memory[position..scanner.Position]));
+            node = new FloatLiteral(s, double.Parse(scanner.Code[position..scanner.Position]), new(scanner.Line, scanner.Column - (scanner.Position - position), scanner.Memory[position..scanner.Position]));
             return true;
         }
         else
@@ -138,7 +138,7 @@ public struct HexParser : IParser<HexLiteral>
 
             for (int i = 0; i < scanner.Position - position - 2; i += 1)
             {
-                var v = Hex2int(scanner.Span[i]);
+                var v = Hex2int(scanner.Code[i]);
                 var add = v * Math.Pow(16, i);
                 if (ulong.MaxValue - sum < add)
                 {

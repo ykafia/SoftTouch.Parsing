@@ -9,31 +9,39 @@ using SoftTouch.Parsing.SDSL.AST;
 // var result = Grammar.Match<ExpressionParser, Expression>("5 ?2: machin.  chose()  .   hello.world [  3 ]  -   2 *(3+ hello.world())");
 var path = @"C:\Users\youness_kafia\Documents\dotnetProjs\SoftTouch.Parsing\assets";
 Directory.SetCurrentDirectory(path);
-var file = File.ReadAllText("./SDSL/MyShader.sdsl");
-file = Grammar.MatchTyped<CodeNodeParsers, CodeSnippets>(file).AST?.ToCode() ?? "";
+var file = File.ReadAllText("./SDSL/Commented.sdsl");
+
+using var preprocessor = new PreProcessor();
+
+preprocessor.With(file);
+
+Console.WriteLine($"Preprocessed is :\n{preprocessor.PreProcess()}");
+
+
+// file = Grammar.MatchTyped<CodeNodeParsers, CodeSnippets>(file).AST?.ToCode() ?? "";
 // Parse(file);
 
-static int Parse(string file)
-{
-    var x = 0;
-    // var uncommented = Grammar.MatchTyped<CodeNodeParsers, CodeSnippets>(file).AST?.ToCode();
-    // if (uncommented != null)
-    // {
-        var result = Grammar.Match<ShaderFileParser, ShaderFile>(file);
-        if (result.AST is not null)
-            x++;
-        // foreach (var e in result.Errors)
-        //     Console.WriteLine(e);
-    // }
-    return x;
-}
-var sw = new Stopwatch();
-foreach(var e in Enumerable.Range(0, 100))
-{
-    Parse(file);
-}
+// static int Parse(string file)
+// {
+//     var x = 0;
+//     // var uncommented = Grammar.MatchTyped<CodeNodeParsers, CodeSnippets>(file).AST?.ToCode();
+//     // if (uncommented != null)
+//     // {
+//         var result = Grammar.Match<ShaderFileParser, ShaderFile>(file);
+//         if (result.AST is not null)
+//             x++;
+//         // foreach (var e in result.Errors)
+//         //     Console.WriteLine(e);
+//     // }
+//     return x;
+// }
+// var sw = new Stopwatch();
+// foreach(var e in Enumerable.Range(0, 100))
+// {
+//     Parse(file);
+// }
 
-sw.Start();
-Parse(file);
-sw.Stop();
-Console.WriteLine(sw.Elapsed.TotalMicroseconds + "µs");
+// sw.Start();
+// Parse(file);
+// sw.Stop();
+// Console.WriteLine(sw.Elapsed.TotalMicroseconds + "µs");

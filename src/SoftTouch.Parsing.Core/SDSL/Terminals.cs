@@ -13,6 +13,8 @@ public static class Terminals
     public static bool Digit(ref Scanner scanner, DigitMode mode = DigitMode.All, bool advance = false) => new DigitTerminalParser(mode).Match(ref scanner, advance);
     public static bool Letter(ref Scanner scanner, bool advance = false) => new LetterTerminalParser().Match(ref scanner, advance);
     public static bool LetterOrDigit(ref Scanner scanner, bool advance = false) => new LetterOrDigitTerminalParser().Match(ref scanner, advance);
+    public static bool IdentifierFirstChar(ref Scanner scanner, bool advance = false) 
+        => Letter(ref scanner,advance) || Char('_',ref scanner, advance);
     public static bool EOL(ref Scanner scanner, bool advance = false) => new EOLTerminalParser().Match(ref scanner, advance);
     public static bool EOF(ref Scanner scanner) => new EOFTerminalParser().Match(ref scanner, false);
 }

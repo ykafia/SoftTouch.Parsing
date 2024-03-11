@@ -11,7 +11,7 @@ public record struct DirectivePrimaryParsers : IParser<Expression>
             return true;
         else if(LiteralsParser.Literal(ref scanner, result, out var lit))
         {
-            parsed = new ValueExpression(lit);
+            parsed = lit;
             return true;
         }
         else 
