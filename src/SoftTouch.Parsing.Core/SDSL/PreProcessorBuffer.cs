@@ -7,25 +7,22 @@ using SoftTouch.Parsing.SDSL;
 namespace SoftTouch.Parsing;
 
 
-
-
-
-public sealed class PreProcessorBuffer : IDisposable
+public class CodeBuffer : IDisposable
 {
     MemoryOwner<char> _owner;
-    public int Length { get; private set; } = 0;
+    public int Length { get; protected set; } = 0;
     public Span<char> Span => _owner.Span[..Length];
     public Memory<char> Memory => _owner.Memory[..Length];
 
     public ref char this[Index idx] => ref Span[idx];
     public Span<char> this[Range range] => Span[range];
 
-    public PreProcessorBuffer()
+    public CodeBuffer()
     {
         _owner = MemoryOwner<char>.Empty;
         Length = 0;
     }
-    public PreProcessorBuffer(string firstFile)
+    public CodeBuffer(string firstFile)
     {
         var len = (int)BitOperations.RoundUpToPowerOf2((uint)firstFile.Length);
         _owner = MemoryOwner<char>.Allocate(len, AllocationMode.Clear);
@@ -52,7 +49,7 @@ public sealed class PreProcessorBuffer : IDisposable
         file.Span.CopyTo(Span[(Length - file.Length)..]);
     }
 
-    void Expand(int size)
+    protected void Expand(int size)
     {
         var newSize = Length + size;
         if (newSize > _owner.Length)
@@ -64,6 +61,15 @@ public sealed class PreProcessorBuffer : IDisposable
         }
     }
 
+    public void Dispose()
+        => _owner.Dispose();
+
+}
+
+
+public sealed class PreProcessedCodeBuffer : CodeBuffer, IDisposable
+{
+    
     public void Remove(int start, int length)
     {
         Span[(start + length)..].CopyTo(Span[start..]);
@@ -94,12 +100,6 @@ public sealed class PreProcessorBuffer : IDisposable
     }
     public void Trim(int start, int length)
     {
-        foreach (ref char s in Span[start..(start + length)])
-            if (!char.IsWhiteSpace(s))
-                s = ' ';
+        Replace(start, length, new string('\n', Span.Slice(start,length).Count('\n')));
     }
-
-    public void Dispose()
-        => _owner.Dispose();
-
 }

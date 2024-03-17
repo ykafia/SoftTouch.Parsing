@@ -12,21 +12,25 @@ public class PreProcessor(Dictionary<string, Literal>? parameters = null) : IDis
 {
     public List<TextLocation> CodeFragments { get; } = [];
     public Dictionary<string, Literal> Variables { get; } = parameters ?? [];
-    public PreProcessorBuffer buffer = new();
+    public CodeBuffer original = new();
+    public PreProcessedCodeBuffer processed = new();
 
     public PreProcessor With(string file)
     {
-        buffer.Add(file);
+        original.Add(file);
+        processed.Add(file);
         return this;
     }
     public PreProcessor With(ReadOnlyMemory<char> file)
     {
-        buffer.Add(file);
+        original.Add(file);
+        processed.Add(file);
         return this;
     }
     public PreProcessor With(ReadOnlySpan<char> file)
     {
-        buffer.Add(file);
+        original.Add(file);
+        processed.Add(file);
         return this;
     }
 
@@ -36,8 +40,14 @@ public class PreProcessor(Dictionary<string, Literal>? parameters = null) : IDis
         var commentLine = new LiteralTerminalParser("//");
         var commentBlockStart = new LiteralTerminalParser("/*");
         var commentBlockEnd = new LiteralTerminalParser("*/");
+
+        var tokenized = new TokenizedCode()
+        {
+            Original = original,
+            Processed = processed
+        };
     
-        var scanner = new Scanner(buffer.Memory);
+        var scanner = new Scanner(tokenized);
 
         while (!scanner.IsEof)
         {
@@ -54,13 +64,13 @@ public class PreProcessor(Dictionary<string, Literal>? parameters = null) : IDis
                 {
                     var pos = scanner.Position;
                     CommonParsers.Until(ref scanner, '\n', advance: true);
-                    buffer.Trim(pos, scanner.Position - pos);
+                    processed.Trim(pos, scanner.Position - pos);
                 }
                 else if (Terminals.Literal("/*", ref scanner))
                 {
                     var pos = scanner.Position;
                     CommonParsers.Until(ref scanner, "*/", advance: true);
-                    buffer.Trim(pos, scanner.Position - pos);
+                    processed.Trim(pos, scanner.Position - pos);
                 }
                 else throw new NotImplementedException();
             }
@@ -127,7 +137,7 @@ public class PreProcessor(Dictionary<string, Literal>? parameters = null) : IDis
             //     }
             // }
         // }
-        return buffer.Span.ToString();
+        return processed.Span.ToString();
     }
 
     public bool Evaluate(Expression expression)
@@ -191,5 +201,5 @@ public class PreProcessor(Dictionary<string, Literal>? parameters = null) : IDis
         };
     }
 
-    public void Dispose() => buffer.Dispose();
+    public void Dispose() => processed.Dispose();
 }

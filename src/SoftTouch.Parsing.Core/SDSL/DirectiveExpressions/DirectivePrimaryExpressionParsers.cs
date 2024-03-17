@@ -84,7 +84,7 @@ public record struct DirectiveMethodCallParser : IParser<Expression>
                     else 
                     {
                         result.Errors.Add(new("Expected expression value", new(scanner, scanner.Position)));
-                        scanner.Position = scanner.Code.Length;
+                        scanner.Position = scanner.Span.Length;
                         parsed = null!;
                         return false;
                     }
@@ -98,7 +98,7 @@ public record struct DirectiveMethodCallParser : IParser<Expression>
                 else
                 {
                     result.Errors.Add(new("Expected parenthesis for closing method call",new(scanner,position)));
-                    scanner.Position = scanner.Code.Length;
+                    scanner.Position = scanner.Span.Length;
                     parsed = null!;
                     return false;
                 }
@@ -108,7 +108,7 @@ public record struct DirectiveMethodCallParser : IParser<Expression>
                 
                 scanner.Position = position;
                 result.Errors.Add(new("Expected method call", new(scanner, position)));
-                scanner.Position = scanner.Code.Length;
+                scanner.Position = scanner.Span.Length;
                 parsed = null!;
                 return false;
             }

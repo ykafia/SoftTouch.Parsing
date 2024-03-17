@@ -56,7 +56,7 @@ public record struct NamespaceParsers : IParser<ShaderNamespace>
                 else 
                 {
                     result.Errors.Add(new("Expected identifier", new(scanner,scanner.Position)));
-                    scanner.Position = scanner.Code.Length;
+                    scanner.Position = scanner.Span.Length;
                 }
                 CommonParsers.Spaces0(ref scanner, result, out _);
             }
@@ -81,7 +81,7 @@ public record struct NamespaceParsers : IParser<ShaderNamespace>
                     else 
                     {
                         result.Errors.Add(new("Expected shader class", new(scanner, scanner.Position)));
-                        scanner.Position = scanner.Code.Length;
+                        scanner.Position = scanner.Span.Length;
                         parsed = null!;
                         return false;
                     }

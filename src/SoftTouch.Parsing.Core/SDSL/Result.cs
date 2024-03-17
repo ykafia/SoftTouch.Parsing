@@ -22,7 +22,7 @@ public readonly struct ErrorLocation
 
         // Setting other attributes
         leftOffset = position - 5 > 0 ? 5 : position;
-        rightOffset = position + 5 < scanner.Code.Length ? 5 : scanner.Code.Length - position - 1;
+        rightOffset = position + 5 < scanner.Span.Length ? 5 : scanner.Span.Length - position - 1;
         Position = position;
         
         Text = scanner.Memory[(position - leftOffset)..(position + rightOffset)];

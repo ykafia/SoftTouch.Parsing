@@ -82,7 +82,7 @@ public record struct ShaderClassParser : IParser<ShaderClass>
                     else 
                     {
                         result.Errors.Add(new("Expected generics definition", new(scanner, scanner.Position)));
-                        scanner.Position = scanner.Code.Length;
+                        scanner.Position = scanner.Span.Length;
                         parsed = null!;
                         return false;
                     }
@@ -98,7 +98,7 @@ public record struct ShaderClassParser : IParser<ShaderClass>
                 else 
                 {
                     result.Errors.Add(new("Expected shader element", new(scanner, scanner.Position)));
-                    scanner.Position = scanner.Code.Length;
+                    scanner.Position = scanner.Span.Length;
                     parsed = null!;
                     return false;
                 }

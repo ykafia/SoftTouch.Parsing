@@ -236,7 +236,7 @@ public record struct BlockStatementParser : IParser<Statement>
                 else
                 {
                     result.Errors.Add(new("Expected Statement", new ErrorLocation(scanner, scanner.Position)));
-                    scanner.Position = scanner.Code.Length;
+                    scanner.Position = scanner.Span.Length;
                     parsed = null!;
                     return false;
                 }

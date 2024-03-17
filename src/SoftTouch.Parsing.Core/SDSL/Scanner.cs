@@ -5,27 +5,41 @@ public struct Scanner
 
     readonly int start = 0;
     // public string Code { get; } = code;
-    public readonly ReadOnlySpan<char> Code => Memory.Span;
-    public ReadOnlyMemory<char> Memory { get; internal set; }
+    public readonly ReadOnlySpan<char> Span => StringCode != null ? StringCode.Value.Span : ProcessedCode != null ? ProcessedCode.Value.Span : throw new NotImplementedException();
+    public readonly ReadOnlyMemory<char> Memory => StringCode != null ? StringCode.Value.Memory : ProcessedCode != null ? ProcessedCode.Value.Memory : throw new NotImplementedException();
+    StringCode? StringCode { get; }
+    TokenizedCode? ProcessedCode { get; }
     public int Position { get; set; } = 0;
 
-    public readonly int Line => Code[..Position].Count('\n') + 1;
-    public readonly int Column => Position - Code[..Position].LastIndexOf('\n') + 1;
+    public readonly int Line => Span[..Position].Count('\n') + 1;
+    public readonly int Column => Position - Span[..Position].LastIndexOf('\n') + 1;
 
 
-    public readonly int End => Code.Length;
+
+    public readonly int End => Span.Length;
     public readonly bool IsEof => Position >= End;
+
 
     public Scanner(string code)
     {
-        Memory = code.AsMemory();
+        StringCode = code;
+        ProcessedCode = null;
     }
-
     public Scanner(ReadOnlyMemory<char> code)
     {
-        Memory = code;
+        StringCode = code;
+        ProcessedCode = null;
     }
-
+    public Scanner(StringCode code)
+    {
+        StringCode = code;
+        ProcessedCode = null;
+    }
+    public Scanner(TokenizedCode code)
+    {
+        ProcessedCode = code;
+        StringCode = null;
+    }
 
     public int ReadChar()
     {
@@ -33,7 +47,7 @@ public struct Scanner
         if (pos < End)
         {
             Position = pos + 1;
-            return Code[pos];
+            return Span[pos];
         }
         return -1;
     }
@@ -41,7 +55,7 @@ public struct Scanner
     public readonly int Peek()
     {
         var pos = Position;
-        return pos < End ? Code[pos] : -1;
+        return pos < End ? Span[pos] : -1;
     }
     public readonly ReadOnlySpan<char> Peek(int size)
         => Position < End ? Slice(Position, size) : [];
@@ -68,7 +82,7 @@ public struct Scanner
             {
                 for (int i = 0; i < matchString.Length; i++)
                 {
-                    if (Code[index++] != matchString[i])
+                    if (Span[index++] != matchString[i])
                         return false;
                 }
                 return true;
@@ -77,7 +91,7 @@ public struct Scanner
             {
                 for (int i = 0; i < matchString.Length; i++)
                 {
-                    if (char.ToLowerInvariant(Code[index++]) != char.ToLowerInvariant(matchString[i]))
+                    if (char.ToLowerInvariant(Span[index++]) != char.ToLowerInvariant(matchString[i]))
                         return false;
                 }
                 return true;
@@ -91,7 +105,7 @@ public struct Scanner
         if (index < End)
         {
             length = Math.Min(index + length, End) - index;
-            var slice = Code.Slice(index, length);
+            var slice = Span.Slice(index, length);
             return slice;
         }
         return [];
@@ -103,7 +117,7 @@ public struct Scanner
         var max = Math.Min(End, index);
         for (int i = start; i < max; i++)
         {
-            if (Code[i] == '\n')
+            if (Span[i] == '\n')
                 lineCount++;
         }
         return lineCount + 1;
