@@ -67,9 +67,10 @@ public class CodeBuffer : IDisposable
 }
 
 
-public sealed class PreProcessedCodeBuffer : CodeBuffer, IDisposable
+public sealed class PreProcessedCodeBuffer(CodeBuffer original) : CodeBuffer, IDisposable
 {
-    
+    public CodeBuffer Original { get; } = original;
+
     public void Remove(int start, int length)
     {
         Span[(start + length)..].CopyTo(Span[start..]);
@@ -100,6 +101,6 @@ public sealed class PreProcessedCodeBuffer : CodeBuffer, IDisposable
     }
     public void Trim(int start, int length)
     {
-        Replace(start, length, new string('\n', Span.Slice(start,length).Count('\n')));
+        Replace(start, length, new string('\n', Span.Slice(start, length).Count('\n')));
     }
 }

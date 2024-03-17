@@ -50,7 +50,6 @@ public record struct CodeToken(int Start, int Length, int Line, int Column);
 
 public struct TokenizedCode : ICodeRepresentation
 {
-    public CodeBuffer Original { get; set; }
     public PreProcessedCodeBuffer Processed { get; set; }
     public readonly ReadOnlySpan<char> Span => Processed.Span;
     public readonly ReadOnlyMemory<char> Memory => Processed.Memory;
