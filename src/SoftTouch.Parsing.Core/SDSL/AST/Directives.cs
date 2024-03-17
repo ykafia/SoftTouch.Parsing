@@ -1,12 +1,27 @@
 namespace SoftTouch.Parsing.SDSL.AST;
 
 
+public class PreProcessableCode(TextLocation info) : Node(info)
+{
+    public List<DirectiveStatement> Snippets { get; set; } = [];
+    public override string ToString()
+    {
+        return string.Join("\n", Snippets);
+    }
+}
+
 public abstract class DirectiveStatement(TextLocation info) : Node(info);
 /// <summary>
 /// Represents a directive code snippet
 /// </summary>
 /// <param name="info"></param>
-public class DirectiveCode(TextLocation info) : DirectiveStatement(info);
+public class DirectiveCode(TextLocation info) : DirectiveStatement(info)
+{
+    public override string ToString()
+    {
+        return Info.Text.ToString();
+    }
+}
 /// <summary>
 /// Represents a directive macro
 /// </summary>
@@ -21,7 +36,7 @@ public abstract class Directive(TextLocation info) : DirectiveStatement(info);
 public abstract class DirectiveFlow(Expression? expression, TextLocation info) : Node(info)
 {
     public Expression? Expression { get; set; } = expression;
-    public List<DirectiveStatement> Snippets { get; set; } = [];
+    public PreProcessableCode? Code { get; set; }
 }
 /// <summary>
 /// Represents a directive define macro
@@ -52,32 +67,68 @@ public class FunctionDefineDirective(Identifier functionName, string pattern, Te
 /// </summary>
 /// <param name="expression"></param>
 /// <param name="info"></param>
-public class IfDirective(Expression expression, TextLocation info) : DirectiveFlow(expression, info);
+public class IfDirective(Expression expression, TextLocation info) : DirectiveFlow(expression, info)
+{
+    public override string ToString()
+    {
+        return $"#if {Expression}\n{Code}";
+    }
+}
 
 /// <summary>
 /// Represents a directive conditional flow control #ifdef
 /// </summary>
 /// <param name="value"></param>
 /// <param name="info"></param>
-public class IfDefDirective(Identifier value, TextLocation info) : IfDirective(value, info);
+public class IfDefDirective(Identifier value, TextLocation info) : IfDirective(value, info)
+{
+    public override string ToString()
+    {
+        return $"#ifdef {Expression}\n{Code}";
+    }
+}
 /// <summary>
 /// Represents a directive conditional flow control #ifndef
 /// </summary>
 /// <param name="value"></param>
 /// <param name="info"></param>
-public class IfNDefDirective(Identifier value, TextLocation info) : IfDirective(value, info);
+public class IfNDefDirective(Identifier value, TextLocation info) : IfDirective(value, info)
+{
+    public override string ToString()
+    {
+        return $"#ifndef {Expression}\n{Code}";
+    }
+}
 /// <summary>
 /// Represents a directive conditional flow control #elif
 /// </summary>
 /// <param name="expression"></param>
 /// <param name="info"></param>
-public class ElifDirective(Expression expression, TextLocation info) : IfDirective(expression, info);
+public class ElifDirective(Expression expression, TextLocation info) : IfDirective(expression, info)
+{
+    public override string ToString()
+    {
+        return $"#elif {Expression}{Code}";
+    }
+}
 /// <summary>
 /// Represents a directive conditional flow control #else
 /// </summary>
 /// <param name="info"></param>
-public class ElseDirective(TextLocation info) : DirectiveFlow(null, info);
-public class EndIfDirective(TextLocation info) : DirectiveFlow(null, info);
+public class ElseDirective(TextLocation info) : DirectiveFlow(null, info)
+{
+    public override string ToString()
+    {
+        return $"#else\n{Code}";
+    }
+}
+public class EndIfDirective(TextLocation info) : DirectiveFlow(null, info)
+{
+    public override string ToString()
+    {
+        return "#endif";
+    }
+}
 
 /// <summary>
 /// Represents a directive conditional flow control
@@ -89,6 +140,18 @@ public class ConditionalDirectives(IfDirective ifExp, TextLocation info) : Direc
     public IfDirective If { get; set; } = ifExp;
     public List<ElifDirective> Elifs { get; set; } = [];
     public ElseDirective? Else { get; set; }
+
+    public override string ToString()
+    {
+        return (If, Elifs, Else) switch
+        {
+            (var i, [], null) => $"{i}",
+            (var i, var e, null) when e is not [] && e is not null => $"{i}\n{string.Join("\n", e)}",
+            (var i, var e, var el) when e is not [] && e is not null => $"{i}\n{string.Join("\n", e)}\n{el}",
+            (var i, [], var el) => $"{i}\n{el}",
+            _ => throw new NotImplementedException()
+        } + "#endif";
+    }
 }
 
 

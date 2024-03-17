@@ -46,18 +46,18 @@ public record struct DirectiveTernaryParser : IParser<Expression>
     public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
-        if (ExpressionParser.Or(ref scanner, result, out parsed))
+        if (DirectiveExpressionParser.Or(ref scanner, result, out parsed))
         {
             var pos2 = scanner.Position;
             CommonParsers.Spaces0(ref scanner, result, out _);
             if (
                 Terminals.Char('?', ref scanner, advance: true)
                 && CommonParsers.Spaces0(ref scanner, result, out _)
-                && ExpressionParser.Expression(ref scanner, result, out var left, new("Expected expression", new(scanner, scanner.Position)))
+                && DirectiveExpressionParser.Expression(ref scanner, result, out var left, new("Expected expression", new(scanner, scanner.Position)))
                 && CommonParsers.Spaces0(ref scanner, result, out _)
                 && Terminals.Char(':', ref scanner, advance: true)
                 && CommonParsers.Spaces0(ref scanner, result, out _)
-                && ExpressionParser.Expression(ref scanner, result, out var right, new("Expected expression", new(scanner, scanner.Position)))
+                && DirectiveExpressionParser.Expression(ref scanner, result, out var right, new("Expected expression", new(scanner, scanner.Position)))
             )
             {
                 parsed = new TernaryExpression(parsed, left, right, scanner.GetLocation(position, scanner.Position - position));
@@ -84,23 +84,22 @@ public record struct DirectiveOrParser() : IParser<Expression>
     public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
-        var ws0 = new Space0();
         parsed = null!;
-        ws0.Match(ref scanner, result, out _);
-        if (ExpressionParser.And(ref scanner, result, out var left))
+        CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+        if (DirectiveExpressionParser.And(ref scanner, result, out var left))
         {
-            ws0.Match(ref scanner, result, out _);
+            CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
             if (Terminals.Literal("||", ref scanner))
             {
                 var op = scanner.Slice(scanner.Position, 2).ToOperator();
                 scanner.Advance(2);
-                ws0.Match(ref scanner, result, out _);
-                if (ExpressionParser.Or(ref scanner, result, out var shift))
+                CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+                if (DirectiveExpressionParser.Or(ref scanner, result, out var shift))
                 {
                     parsed = new BinaryExpression(left, op, shift, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else if (ExpressionParser.And(ref scanner, result, out var add))
+                else if (DirectiveExpressionParser.And(ref scanner, result, out var add))
                 {
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
@@ -133,23 +132,22 @@ public record struct DirectiveAndParser() : IParser<Expression>
     public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
-        var ws0 = new Space0();
         parsed = null!;
-        ws0.Match(ref scanner, result, out _);
-        if (ExpressionParser.BOr(ref scanner, result, out var left))
+        CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+        if (DirectiveExpressionParser.BOr(ref scanner, result, out var left))
         {
-            ws0.Match(ref scanner, result, out _);
+            CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
             if (Terminals.Literal("&&", ref scanner))
             {
                 var op = scanner.Slice(scanner.Position, 2).ToOperator();
                 scanner.Advance(2);
-                ws0.Match(ref scanner, result, out _);
-                if (ExpressionParser.BAnd(ref scanner, result, out var shift))
+                CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+                if (DirectiveExpressionParser.BAnd(ref scanner, result, out var shift))
                 {
                     parsed = new BinaryExpression(left, op, shift, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else if (ExpressionParser.BOr(ref scanner, result, out var add))
+                else if (DirectiveExpressionParser.BOr(ref scanner, result, out var add))
                 {
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
@@ -184,23 +182,23 @@ public record struct DirectiveBitwiseOrParser() : IParser<Expression>
     public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
-        var ws0 = new Space0();
+        
         parsed = null!;
-        ws0.Match(ref scanner, result, out _);
-        if (ExpressionParser.XOr(ref scanner, result, out var left))
+        CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+        if (DirectiveExpressionParser.XOr(ref scanner, result, out var left))
         {
-            ws0.Match(ref scanner, result, out _);
+            CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
             if (!Terminals.Literal("||", ref scanner) && Terminals.Char('|', ref scanner))
             {
                 var op = ((char)scanner.Peek()).ToOperator();
                 scanner.Advance(1);
-                ws0.Match(ref scanner, result, out _);
-                if (ExpressionParser.BOr(ref scanner, result, out var shift))
+                CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+                if (DirectiveExpressionParser.BOr(ref scanner, result, out var shift))
                 {
                     parsed = new BinaryExpression(left, op, shift, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else if (ExpressionParser.XOr(ref scanner, result, out var add))
+                else if (DirectiveExpressionParser.XOr(ref scanner, result, out var add))
                 {
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
@@ -232,23 +230,23 @@ public record struct DirectiveBitwiseXOrParser() : IParser<Expression>
     public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
-        var ws0 = new Space0();
+        
         parsed = null!;
-        ws0.Match(ref scanner, result, out _);
-        if (ExpressionParser.BAnd(ref scanner, result, out var left))
+        CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+        if (DirectiveExpressionParser.BAnd(ref scanner, result, out var left))
         {
-            ws0.Match(ref scanner, result, out _);
+            CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
             if (Terminals.Char('^', ref scanner))
             {
                 var op = ((char)scanner.Peek()).ToOperator();
                 scanner.Advance(1);
-                ws0.Match(ref scanner, result, out _);
-                if (ExpressionParser.XOr(ref scanner, result, out var shift))
+                CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+                if (DirectiveExpressionParser.XOr(ref scanner, result, out var shift))
                 {
                     parsed = new BinaryExpression(left, op, shift, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else if (ExpressionParser.BAnd(ref scanner, result, out var add))
+                else if (DirectiveExpressionParser.BAnd(ref scanner, result, out var add))
                 {
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
@@ -280,23 +278,23 @@ public record struct DirectiveBitwiseAndParser() : IParser<Expression>
     public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
-        var ws0 = new Space0();
+        
         parsed = null!;
-        ws0.Match(ref scanner, result, out _);
-        if (ExpressionParser.Equality(ref scanner, result, out var left))
+        CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+        if (DirectiveExpressionParser.Equality(ref scanner, result, out var left))
         {
-            ws0.Match(ref scanner, result, out _);
+            CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
             if (!Terminals.Literal("&&", ref scanner) && Terminals.Char('&', ref scanner))
             {
                 var op = ((char)scanner.Peek()).ToOperator();
                 scanner.Advance(1);
-                ws0.Match(ref scanner, result, out _);
-                if (ExpressionParser.BAnd(ref scanner, result, out var shift))
+                CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+                if (DirectiveExpressionParser.BAnd(ref scanner, result, out var shift))
                 {
                     parsed = new BinaryExpression(left, op, shift, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else if (ExpressionParser.Equality(ref scanner, result, out var add))
+                else if (DirectiveExpressionParser.Equality(ref scanner, result, out var add))
                 {
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
@@ -331,23 +329,23 @@ public record struct DirectiveEqualityParser() : IParser<Expression>
     public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
-        var ws0 = new Space0();
+        
         parsed = null!;
-        ws0.Match(ref scanner, result, out _);
-        if (ExpressionParser.Relation(ref scanner, result, out var left))
+        CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+        if (DirectiveExpressionParser.Relation(ref scanner, result, out var left))
         {
-            ws0.Match(ref scanner, result, out _);
+            CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
             if (Terminals.Literal("==", ref scanner) || Terminals.Literal("!=", ref scanner))
             {
                 var op = scanner.Slice(scanner.Position, 2).ToOperator();
                 scanner.Advance(2);
-                ws0.Match(ref scanner, result, out _);
-                if (ExpressionParser.Equality(ref scanner, result, out var shift))
+                CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+                if (DirectiveExpressionParser.Equality(ref scanner, result, out var shift))
                 {
                     parsed = new BinaryExpression(left, op, shift, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else if (ExpressionParser.Relation(ref scanner, result, out var add))
+                else if (DirectiveExpressionParser.Relation(ref scanner, result, out var add))
                 {
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
@@ -380,25 +378,25 @@ public record struct DirectiveRelationalParser() : IParser<Expression>
     public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
-        var ws0 = new Space0();
+        
         parsed = null!;
-        ws0.Match(ref scanner, result, out _);
-        if (ExpressionParser.Shift(ref scanner, result, out var left))
+        CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+        if (DirectiveExpressionParser.Shift(ref scanner, result, out var left))
         {
-            ws0.Match(ref scanner, result, out _);
+            CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
             if (
                 !Terminals.Literal(">=", ref scanner) && Terminals.Literal(">", ref scanner)
                 || !Terminals.Literal("<=", ref scanner) && Terminals.Literal("<", ref scanner))
             {
                 var op = ((char)scanner.Peek()).ToOperator();
                 scanner.Advance(1);
-                ws0.Match(ref scanner, result, out _);
-                if (ExpressionParser.Relation(ref scanner, result, out var shift))
+                CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+                if (DirectiveExpressionParser.Relation(ref scanner, result, out var shift))
                 {
                     parsed = new BinaryExpression(left, op, shift, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else if (ExpressionParser.Shift(ref scanner, result, out var add))
+                else if (DirectiveExpressionParser.Shift(ref scanner, result, out var add))
                 {
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
@@ -414,13 +412,13 @@ public record struct DirectiveRelationalParser() : IParser<Expression>
             {
                 var op = scanner.Slice(scanner.Position, 2).ToOperator();
                 scanner.Advance(2);
-                ws0.Match(ref scanner, result, out _);
-                if (ExpressionParser.Relation(ref scanner, result, out var shift))
+                CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+                if (DirectiveExpressionParser.Relation(ref scanner, result, out var shift))
                 {
                     parsed = new BinaryExpression(left, op, shift, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else if (ExpressionParser.Shift(ref scanner, result, out var add))
+                else if (DirectiveExpressionParser.Shift(ref scanner, result, out var add))
                 {
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
@@ -453,23 +451,23 @@ public record struct DirectiveBitwiseShiftParser() : IParser<Expression>
     public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
-        var ws0 = new Space0();
+        
         parsed = null!;
-        ws0.Match(ref scanner, result, out _);
-        if (ExpressionParser.Add(ref scanner, result, out var left))
+        CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+        if (DirectiveExpressionParser.Add(ref scanner, result, out var left))
         {
-            ws0.Match(ref scanner, result, out _);
+            CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
             if (Terminals.Literal(">>", ref scanner) || Terminals.Literal("<<", ref scanner))
             {
                 var op = scanner.Slice(scanner.Position, 2).ToOperator();
                 scanner.Advance(2);
-                ws0.Match(ref scanner, result, out _);
-                if (ExpressionParser.Shift(ref scanner, result, out var shift))
+                CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+                if (DirectiveExpressionParser.Shift(ref scanner, result, out var shift))
                 {
                     parsed = new BinaryExpression(left, op, shift, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else if (ExpressionParser.Add(ref scanner, result, out var add))
+                else if (DirectiveExpressionParser.Add(ref scanner, result, out var add))
                 {
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
@@ -502,23 +500,23 @@ public record struct DirectiveAdditionParser() : IParser<Expression>
     public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
-        var ws0 = new Space0();
+        
         parsed = null!;
-        ws0.Match(ref scanner, result, out _);
-        if (ExpressionParser.Mul(ref scanner, result, out var left))
+        CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+        if (DirectiveExpressionParser.Mul(ref scanner, result, out var left))
         {
-            ws0.Match(ref scanner, result, out _);
+            CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
             if (Terminals.Set("+-", ref scanner))
             {
                 var op = ((char)scanner.Peek()).ToOperator();
                 scanner.Advance(1);
-                ws0.Match(ref scanner, result, out _);
-                if (ExpressionParser.Add(ref scanner, result, out var add))
+                CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+                if (DirectiveExpressionParser.Add(ref scanner, result, out var add))
                 {
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else if (ExpressionParser.Mul(ref scanner, result, out var mul))
+                else if (DirectiveExpressionParser.Mul(ref scanner, result, out var mul))
                 {
                     parsed = new BinaryExpression(left, op, mul, scanner.GetLocation(position, scanner.Position - position));
                     return true;
@@ -551,23 +549,23 @@ public record struct DirectiveMultiplicationParser() : IParser<Expression>
     public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
-        var ws0 = new Space0();
         parsed = null!;
-        ws0.Match(ref scanner, result, out _);
-        if (UnaryParsers.Prefix(ref scanner, result, out var left))
+        CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+        if (DirectiveUnaryParsers.Prefix(ref scanner, result, out var left))
         {
-            ws0.Match(ref scanner, result, out _);
+            CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
             if (Terminals.Set("*/%", ref scanner))
             {
                 var op = ((char)scanner.Peek()).ToOperator();
                 scanner.Advance(1);
-                ws0.Match(ref scanner, result, out _);
-                if (ExpressionParser.Mul(ref scanner, result, out var expression))
+                CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+
+                if (DirectiveExpressionParser.Mul(ref scanner, result, out var expression))
                 {
                     parsed = new BinaryExpression(left, op, expression, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else if (UnaryParsers.Prefix(ref scanner, result, out var right))
+                else if (DirectiveUnaryParsers.Prefix(ref scanner, result, out var right))
                 {
                     parsed = new BinaryExpression(left, op, right, scanner.GetLocation(position, scanner.Position - position));
                     return true;

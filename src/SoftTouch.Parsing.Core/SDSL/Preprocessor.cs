@@ -13,7 +13,7 @@ public class PreProcessor(Dictionary<string, Literal>? parameters = null) : IDis
     public List<TextLocation> CodeFragments { get; } = [];
     public Dictionary<string, Literal> Variables { get; } = parameters ?? [];
     public CodeBuffer original = new();
-    public PreProcessedCodeBuffer processed = new();
+    public PreProcessedCodeBuffer processed = new(new());
 
     public PreProcessor With(string file)
     {
@@ -43,7 +43,6 @@ public class PreProcessor(Dictionary<string, Literal>? parameters = null) : IDis
 
         var tokenized = new TokenizedCode()
         {
-            Original = original,
             Processed = processed
         };
     

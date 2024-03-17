@@ -9,9 +9,14 @@ public record struct DirectivePrimaryParsers : IParser<Expression>
     {
         if(Parenthesis(ref scanner, result, out parsed))
             return true;
-        else if(LiteralsParser.Literal(ref scanner, result, out var lit))
+        else if(LiteralsParser.Identifier(ref scanner, result, out var lit))
         {
             parsed = lit;
+            return true;
+        }
+        else if(LiteralsParser.Integer(ref scanner, result, out var integer))
+        {
+            parsed = integer;
             return true;
         }
         else 

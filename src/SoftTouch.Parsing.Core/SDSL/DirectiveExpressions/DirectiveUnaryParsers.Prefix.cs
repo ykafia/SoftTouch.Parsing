@@ -10,15 +10,15 @@ public record struct DirectivePrefixParser : IParser<Expression>
         var position = scanner.Position;
         if (DirectiveUnaryParsers.PrefixIncrement(ref scanner, result, out parsed))
             return true;
-        else if (UnaryParsers.Signed(ref scanner, result, out parsed))
+        else if (DirectiveUnaryParsers.Signed(ref scanner, result, out parsed))
             return true;
         // prefix not
-        else if (UnaryParsers.Not(ref scanner, result, out parsed))
+        else if (DirectiveUnaryParsers.Not(ref scanner, result, out parsed))
             return true;
         // prefix cast 
-        else if (UnaryParsers.Cast(ref scanner, result, out parsed))
+        else if (DirectiveUnaryParsers.Cast(ref scanner, result, out parsed))
             return true;
-        else if (UnaryParsers.Postfix(ref scanner, result, out var p))
+        else if (DirectiveUnaryParsers.Primary(ref scanner, result, out var p))
         {
             parsed = p;
             return true;
@@ -42,7 +42,7 @@ public record struct DirectivePrefixIncrementParser : IParser<Expression>
         if (Terminals.Literal("++", ref scanner, advance: true))
         {
             CommonParsers.Spaces0(ref scanner, result, out _);
-            if (DirectiveUnaryParsers.Postfix(ref scanner, result, out var lit))
+            if (DirectiveUnaryParsers.Primary(ref scanner, result, out var lit))
             {
                 parsed = new PrefixExpression(Operator.Inc, lit, scanner.GetLocation(position, scanner.Position - position));
                 return true;
@@ -59,7 +59,7 @@ public record struct DirectivePrefixIncrementParser : IParser<Expression>
         else if (Terminals.Literal("--", ref scanner, advance: true))
         {
             CommonParsers.Spaces0(ref scanner, result, out _);
-            if (UnaryParsers.Postfix(ref scanner, result, out var lit))
+            if (DirectiveUnaryParsers.Primary(ref scanner, result, out var lit))
             {
                 parsed = new PrefixExpression(Operator.Inc, lit, scanner.GetLocation(position, scanner.Position - position));
                 return true;
@@ -94,7 +94,7 @@ public record struct DirectiveNotExpressionParser : IParser<Expression>
             var op = ((char)scanner.Peek()).ToOperator();
             scanner.Advance(1);
             CommonParsers.Spaces0(ref scanner, result, out _);
-            if (UnaryParsers.Postfix(ref scanner, result, out var lit))
+            if (DirectiveUnaryParsers.Primary(ref scanner, result, out var lit))
             {
                 parsed = new PrefixExpression(op, lit, scanner.GetLocation(position, scanner.Position - position));
                 return true;
@@ -127,7 +127,7 @@ public record struct DirectiveSignExpressionParser : IParser<Expression>
             var op = ((char)scanner.Peek()).ToOperator();
             scanner.Advance(1);
             CommonParsers.Spaces0(ref scanner, result, out _);
-            if (UnaryParsers.Prefix(ref scanner, result, out var lit))
+            if (DirectiveUnaryParsers.Prefix(ref scanner, result, out var lit))
             {
                 parsed = new PrefixExpression(op, lit, scanner.GetLocation(position, scanner.Position - position));
                 return true;
@@ -162,7 +162,7 @@ public record struct DirectiveCastExpressionParser : IParser<Expression>
                 && LiteralsParser.Identifier(ref scanner, result, out var typeName, new("Expected identifier", new(scanner, scanner.Position)))
                 && CommonParsers.Spaces0(ref scanner, result, out _)
                 && Terminals.Char(')', ref scanner, true)
-                && UnaryParsers.Postfix(ref scanner, result, out var lit)
+                && DirectiveUnaryParsers.Primary(ref scanner, result, out var lit)
         )
         {
             parsed = new CastExpression(typeName.Name, Operator.Cast, lit, scanner.GetLocation(position, scanner.Position - position));

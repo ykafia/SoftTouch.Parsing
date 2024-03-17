@@ -12,7 +12,7 @@ public static class CommonParsers
 
     public static bool Until(ref Scanner scanner, char value, bool advance = false)
     {
-        while(!scanner.IsEof && !Terminals.Char(value, ref scanner, advance));
+        while(!scanner.IsEof && !Terminals.Char(value, ref scanner, advance))
             scanner.Advance(1);
         return scanner.IsEof;
     }

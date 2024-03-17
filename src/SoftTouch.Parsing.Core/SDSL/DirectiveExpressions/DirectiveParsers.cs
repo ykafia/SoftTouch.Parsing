@@ -1,16 +1,31 @@
 using Microsoft.VisualBasic;
-using SoftTouch.Parsing.SDSL;
 using SoftTouch.Parsing.SDSL.AST;
 
-namespace SoftTouch.Parsing;
+namespace SoftTouch.Parsing.SDSL;
 
+public record struct PreprocessorParser : IParser<PreProcessableCode>
+{
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out PreProcessableCode parsed, in ParseError? orError = null)
+    {
+        var position = scanner.Position;
+        var p = new PreProcessableCode(new());
+        while (!scanner.IsEof && DirectiveStatementParsers.Statement(ref scanner, result, out var statement))            
+            p.Snippets.Add(statement);
+        p.Info = scanner.GetLocation(position, scanner.Position - position);
+        parsed = p;
+        return true;
+    }
+
+    public static bool PreCode(ref Scanner scanner, ParseResult result, out PreProcessableCode parsed, in ParseError? orError = null)
+        => new PreprocessorParser().Match(ref scanner, result, out parsed, orError);
+}
 
 public record struct DirectiveStatementParsers : IParser<DirectiveStatement>
 {
     public readonly bool Match(ref Scanner scanner, ParseResult result, out DirectiveStatement parsed, in ParseError? orError = null)
     {
         parsed = null!;
-        if(Conditional(ref scanner, result, out var conditional))
+        if (Conditional(ref scanner, result, out var conditional))
         {
             parsed = conditional;
             return true;
@@ -72,14 +87,21 @@ public struct ConditionalDirectivesParser : IParser<ConditionalDirectives>
 
         if (DirectiveStatementParsers.AnyIf(ref scanner, result, out var ifDirective, orError))
         {
+            if (PreprocessorParser.PreCode(ref scanner, result, out var c))
+                ifDirective.Code = c;
+
             var elifDirectives = new List<ElifDirective>();
             while (DirectiveStatementParsers.Elif(ref scanner, result, out var elifDirective, orError))
             {
                 elifDirectives.Add((ElifDirective)elifDirective);
+                if (PreprocessorParser.PreCode(ref scanner, result, out c))
+                    elifDirective.Code = c;
             }
 
-            DirectiveStatementParsers.Else(ref scanner, result, out var elseDirective, orError);
-
+            if(DirectiveStatementParsers.Else(ref scanner, result, out var elseDirective, orError))
+                if (PreprocessorParser.PreCode(ref scanner, result, out c))
+                    elseDirective.Code = c;
+            
             if (DirectiveStatementParsers.Endif(ref scanner, result, orError))
             {
                 parsed = new ConditionalDirectives(ifDirective, scanner.GetLocation(position, scanner.Position - position))
@@ -89,7 +111,7 @@ public struct ConditionalDirectivesParser : IParser<ConditionalDirectives>
                 };
                 return true;
             }
-            else 
+            else
             {
                 parsed = null!;
                 return false;
@@ -151,8 +173,8 @@ public record struct ConditionalIfDefDirectivesParser : IParser<IfDefDirective>
         CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
         if (
             Terminals.Literal("#ifdef", ref scanner, advance: true)
-            && CommonParsers.Spaces1(ref scanner, result, out _, onlyWhiteSpace: true)
-            && LiteralsParser.Identifier(ref scanner, result, out var id)
+            && CommonParsers.Spaces1(ref scanner, result, out _, onlyWhiteSpace: true, orError: new("missing space", new(scanner, scanner.Position)))
+            && LiteralsParser.Identifier(ref scanner, result, out var id, new("needs identifier", new(scanner, scanner.Position)))
             && Terminals.EOL(ref scanner, advance: true)
         )
         {

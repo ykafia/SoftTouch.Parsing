@@ -135,7 +135,7 @@ public record struct EOLTerminalParser() : ITerminal
         var position = scanner.Position;
         while(scanner.Peek() == ' ')
             scanner.Advance(1);
-        var result = scanner.Peek() == '\n';
+        var result = Terminals.Char('\n',ref scanner, advance) || Terminals.Literal("\r\n", ref scanner, advance);
         if(!advance && result)
             scanner.Position = position;
         return result;

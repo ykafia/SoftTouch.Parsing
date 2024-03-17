@@ -1,10 +1,17 @@
 namespace MyNamespace.SoftTouch.Hello
 {
 #ifdef SHADER
+    #if SHADER > 0
     shader Parent 
     {
         stream int a;
     }
+    #else
+    shader Parent
+    {
+        stream int b;
+    }
+    #endif
 
     shader MyShader : Parent
     {

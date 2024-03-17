@@ -51,6 +51,12 @@ public struct IntegerParser : IParser<IntegerLiteral>
                 return true;
             }
         }
+        else if (Terminals.Char('0', ref scanner, advance: true) && !Terminals.Digit(ref scanner, DigitMode.All))
+        {
+            var memory = scanner.Memory[position..scanner.Position];
+            node = new(new(32, false, true), 0, new(scanner.Line, scanner.Column - memory.Length, memory));
+            return true;
+        }
         else
         {
             node = null!;

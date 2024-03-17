@@ -60,8 +60,7 @@ public struct TokenizedCode : ICodeRepresentation
 
     public readonly ReadOnlySpan<char> this[Range range] => Span[range];
     public void Dispose() 
-    { 
-        Original.Dispose();
+    {
         Processed.Dispose();
     }
     public readonly ReadOnlyMemory<char> Slice(int start, int length) => Memory.Slice(start, length);

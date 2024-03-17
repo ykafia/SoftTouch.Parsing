@@ -43,6 +43,7 @@ public record struct LiteralsParser : IParser<Literal>
         return false;
     }
     public static bool Number(ref Scanner scanner, ParseResult result, out NumberLiteral number, in ParseError? orError = null) => new NumberParser().Match(ref scanner, result, out number, in orError);
+    public static bool Integer(ref Scanner scanner, ParseResult result, out IntegerLiteral number, in ParseError? orError = null) => new IntegerParser().Match(ref scanner, result, out number, in orError);
 }
 
 

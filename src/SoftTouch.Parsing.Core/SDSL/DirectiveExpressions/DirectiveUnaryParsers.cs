@@ -15,6 +15,6 @@ public record struct DirectiveUnaryParsers
         => new DirectiveCastExpressionParser().Match(ref scanner, result, out cast, in orError);
     public static bool Prefix(ref Scanner scanner, ParseResult result, out Expression prefix, in ParseError? orError = null)
         => new DirectivePrefixParser().Match(ref scanner, result, out prefix, in orError);
-    public static bool Postfix(ref Scanner scanner, ParseResult result, out Expression postfix, in ParseError? orError = null)
-       => new DirectivePostfixParser().Match(ref scanner, result, out postfix, in orError);
+    public static bool Primary(ref Scanner scanner, ParseResult result, out Expression postfix, in ParseError? orError = null)
+       => new DirectivePrimaryParsers().Match(ref scanner, result, out postfix, in orError);
 }
