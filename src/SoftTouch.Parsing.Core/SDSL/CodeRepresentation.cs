@@ -50,6 +50,7 @@ public record struct CodeToken(int Start, int Length, int Line, int Column);
 
 public struct TokenizedCode : ICodeRepresentation
 {
+    public List<CodeToken> Tokens { get; set; }
     public PreProcessedCodeBuffer Processed { get; set; }
     public readonly ReadOnlySpan<char> Span => Processed.Span;
     public readonly ReadOnlyMemory<char> Memory => Processed.Memory;
@@ -59,11 +60,17 @@ public struct TokenizedCode : ICodeRepresentation
     public readonly char this[Index index] => Span[index];
 
     public readonly ReadOnlySpan<char> this[Range range] => Span[range];
-    public void Dispose() 
+
+
+    public TokenizedCode()
+    {
+        Processed = new();
+        Tokens = [];
+    }
+
+    public readonly void Dispose() 
     {
         Processed.Dispose();
     }
     public readonly ReadOnlyMemory<char> Slice(int start, int length) => Memory.Slice(start, length);
-
-
 }

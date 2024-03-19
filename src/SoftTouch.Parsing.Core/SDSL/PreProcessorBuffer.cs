@@ -67,9 +67,8 @@ public class CodeBuffer : IDisposable
 }
 
 
-public sealed class PreProcessedCodeBuffer(CodeBuffer original) : CodeBuffer, IDisposable
+public sealed class PreProcessedCodeBuffer() : CodeBuffer, IDisposable
 {
-    public CodeBuffer Original { get; } = original;
 
     public void Remove(int start, int length)
     {

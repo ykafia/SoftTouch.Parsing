@@ -18,19 +18,16 @@ public class PreProcessor(Dictionary<string, Literal>? parameters = null) : IDis
     public PreProcessor With(string file)
     {
         original.Add(file);
-        processed.Add(file);
         return this;
     }
     public PreProcessor With(ReadOnlyMemory<char> file)
     {
         original.Add(file);
-        processed.Add(file);
         return this;
     }
     public PreProcessor With(ReadOnlySpan<char> file)
     {
         original.Add(file);
-        processed.Add(file);
         return this;
     }
 
@@ -43,9 +40,9 @@ public class PreProcessor(Dictionary<string, Literal>? parameters = null) : IDis
 
         var tokenized = new TokenizedCode()
         {
-            Processed = processed
+            
         };
-    
+
         var scanner = new Scanner(tokenized);
 
         while (!scanner.IsEof)
@@ -77,66 +74,7 @@ public class PreProcessor(Dictionary<string, Literal>? parameters = null) : IDis
         // How to parse 
         scanner.Position = 0;
         var result = new ParseResult();
-
-        // while(!scanner.IsEof)
-        // {
-        //     // Try parse directive
-        //     // If match, evaluate directive
-        //     // If evaluate to true continue
-        //     // If not, skip code block until next directive
-        //     var pos = scanner.Position;
-        //     CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
-        //     if(Terminals.Literal("#define", ref scanner, advance: true))
-        //     {
-        //         // Replace all occurences of the define value with the new value
-        //     }
-        //     else if (Terminals.Literal("#ifdef", ref scanner, advance: true))
-        //     {
-        //         if(
-        //             CommonParsers.Spaces1(ref scanner, result, out _, onlyWhiteSpace: true)
-        //             && LiteralsParser.Identifier(ref scanner, result, out var identifier)
-        //             && Terminals.EOL(ref scanner, advance: true)
-        //         )
-        //         {
-        //             if(Variables.ContainsKey(identifier.Name))
-        //             {
-
-        //             }
-        //         }
-        //         else throw new NotImplementedException();
-        //         // If the value is defined then skip to the next directive
-        //     }
-        //     else if (Terminals.Literal("#ifndef", ref scanner, advance: true))
-        //     {
-
-        //     }
-        //     else if(Terminals.Literal("#if", ref scanner, advance: true))
-        //     {
-
-        //     }
-
-
-        // }
-        // var sansComment = sansCommentBuilder.ToString();
-        // var macroScanner = new Scanner(sansComment);
-        // var result = new ParseResult();
-        // new ShaderFileParser().Match(ref shaderScanner, result, out var ast);
-        // {
-            // while (!scanner.IsEof)
-            // {
-            //     CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
-            //     if (Terminals.Literal("#ifdef", ref scanner, advance: true))
-            //     {
-            //         CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
-            //         DirectiveExpressionParser.Expression(ref scanner, result, out var expression);
-            //         if(Evaluate(expression))
-            //         {
-            //             // Add code;
-            //         }
-            //     }
-            // }
-        // }
-        return processed.Span.ToString();
+        throw new NotImplementedException();
     }
 
     public bool Evaluate(Expression expression)

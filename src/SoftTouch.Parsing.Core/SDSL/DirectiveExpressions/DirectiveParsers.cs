@@ -9,7 +9,7 @@ public record struct PreprocessorParser : IParser<PreProcessableCode>
     {
         var position = scanner.Position;
         var p = new PreProcessableCode(new());
-        while (!scanner.IsEof && DirectiveStatementParsers.Statement(ref scanner, result, out var statement))            
+        while (!scanner.IsEof && DirectiveStatementParsers.Statement(ref scanner, result, out var statement))
             p.Snippets.Add(statement);
         p.Info = scanner.GetLocation(position, scanner.Position - position);
         parsed = p;
@@ -98,10 +98,10 @@ public struct ConditionalDirectivesParser : IParser<ConditionalDirectives>
                     elifDirective.Code = c;
             }
 
-            if(DirectiveStatementParsers.Else(ref scanner, result, out var elseDirective, orError))
+            if (DirectiveStatementParsers.Else(ref scanner, result, out var elseDirective, orError))
                 if (PreprocessorParser.PreCode(ref scanner, result, out c))
                     elseDirective.Code = c;
-            
+
             if (DirectiveStatementParsers.Endif(ref scanner, result, orError))
             {
                 parsed = new ConditionalDirectives(ifDirective, scanner.GetLocation(position, scanner.Position - position))
@@ -316,3 +316,83 @@ public record struct EndifDirectiveParser : IParser<NoNode>
     }
 }
 
+
+public record struct ObjectDefineDirective : IParser<AST.ObjectDefineDirective>
+{
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out AST.ObjectDefineDirective parsed, in ParseError? orError = null)
+    {
+        var position = scanner.Position;
+        CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+
+        if (
+            Terminals.Literal("#define", ref scanner, advance: true)
+            && CommonParsers.Spaces1(ref scanner, result, out _, onlyWhiteSpace: true)
+            && LiteralsParser.Identifier(ref scanner, result, out var identifier)
+        )
+        {
+            if (
+                DirectiveExpressionParser.Expression(ref scanner, result, out var expression)
+                && Terminals.EOL(ref scanner, advance: true)
+            )
+            {
+                parsed = new(identifier, expression, scanner.GetLocation(position, scanner.Position - position));
+                return true;
+            }
+            else if(Terminals.EOL(ref scanner, advance: true))
+            {
+                parsed = new(identifier, null, scanner.GetLocation(position, scanner.Position - position));
+                return true;
+            }
+            else
+            {
+                scanner.Position = position;
+                parsed = null!;
+                return false;
+            }
+        }
+        else
+        {
+            scanner.Position = position;
+            parsed = null!;
+            return false;
+        }
+    }
+}
+
+
+public record struct FunctionDefineDirectiveParser : IParser<FunctionDefineDirective>
+{
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out FunctionDefineDirective parsed, in ParseError? orError = null)
+    {
+        var position = scanner.Position;
+        CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
+
+        if (
+            Terminals.Literal("#define", ref scanner, advance: true)
+            && CommonParsers.Spaces1(ref scanner, result, out _, onlyWhiteSpace: true)
+            && LiteralsParser.Identifier(ref scanner, result, out var identifier)
+            && CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true)
+            && Terminals.Char('(', ref scanner, advance: true)
+        )
+        {
+            var func = new FunctionDefineDirective(identifier, "", new());
+            if()
+            while(
+                CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true)
+                && Terminals.Char(',', ref scanner, advance: true)
+                && LiteralsParser.Identifier(ref scanner, result, out var paramId)
+                && CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true)
+
+            )
+            {
+
+            }
+        }
+        else
+        {
+            scanner.Position = position;
+            parsed = null!;
+            return false;
+        }
+    }
+}

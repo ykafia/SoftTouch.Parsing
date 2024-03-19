@@ -44,7 +44,7 @@ public abstract class DirectiveFlow(Expression? expression, TextLocation info) :
 /// <param name="identifier"></param>
 /// <param name="expression"></param>
 /// <param name="info"></param>
-public class DefineDirective(Identifier identifier, Expression? expression, TextLocation info) : Directive(info)
+public class ObjectDefineDirective(Identifier identifier, Expression? expression, TextLocation info) : Directive(info)
 {
     public Identifier Identifier { get; set; } = identifier;
     public Expression? Expression { get; set; } = expression;
