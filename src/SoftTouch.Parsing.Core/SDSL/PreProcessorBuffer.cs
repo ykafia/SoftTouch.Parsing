@@ -6,7 +6,6 @@ using SoftTouch.Parsing.SDSL;
 
 namespace SoftTouch.Parsing;
 
-
 public class CodeBuffer : IDisposable
 {
     MemoryOwner<char> _owner;

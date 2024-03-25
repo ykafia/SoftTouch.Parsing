@@ -10,15 +10,15 @@ using SoftTouch.Parsing.SDSL.AST;
 var path = @"C:\Users\youness_kafia\Documents\dotnetProjs\SoftTouch.Parsing\assets";
 // var path = @"C:\Users\kafia\source\repos\ykafia\SoftTouch.Parsing\assets";
 Directory.SetCurrentDirectory(path);
-var file = File.ReadAllText("./SDSL/MyShader.sdsl");
+var file = File.ReadAllText("./SDSL/Commented.sdsl");
 var match = Grammar.Match<PreprocessorParser, PreProcessableCode>(file);
 if(match.AST is not null)
     Console.WriteLine(match.AST);
 using var preprocessor = new PreProcessor();
 
-// preprocessor.With(file);
-
-// Console.WriteLine($"Preprocessed is :\n{preprocessor.PreProcess()}");
+preprocessor.With(file);
+preprocessor.PreProcess();
+Console.WriteLine($"Preprocessed is :\n{preprocessor.Code}");
 
 
 // file = Grammar.MatchTyped<CodeNodeParsers, CodeSnippets>(file).AST?.ToCode() ?? "";

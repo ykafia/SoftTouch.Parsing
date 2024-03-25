@@ -30,6 +30,16 @@ public record struct DirectiveStatementParsers : IParser<DirectiveStatement>
             parsed = conditional;
             return true;
         }
+        else if(Define(ref scanner, result, out var obj))
+        {
+            parsed = obj;
+            return true;
+        }
+        else if (DefineFunc(ref scanner, result, out var func))
+        {
+            parsed = func;
+            return true;
+        }
         else if (Code(ref scanner, result, out var code))
         {
             parsed = code;
@@ -58,7 +68,10 @@ public record struct DirectiveStatementParsers : IParser<DirectiveStatement>
         parsed = null!;
         return false;
     }
-
+    public static bool Define(ref Scanner scanner, ParseResult result, out ObjectDefineDirective parsed, in ParseError? orError = null)
+        => new ObjectDefineDirectiveParser().Match(ref scanner, result, out parsed, orError);
+    public static bool DefineFunc(ref Scanner scanner, ParseResult result, out FunctionDefineDirective parsed, in ParseError? orError = null)
+        => new FunctionDefineDirectiveParser().Match(ref scanner, result, out parsed, orError);
     public static bool If(ref Scanner scanner, ParseResult result, out IfDirective parsed, in ParseError? orError = null)
         => new ConditionalIfDirectivesParser().Match(ref scanner, result, out parsed, orError);
     public static bool IfDef(ref Scanner scanner, ParseResult result, out IfDefDirective parsed, in ParseError? orError = null)
@@ -317,9 +330,9 @@ public record struct EndifDirectiveParser : IParser<NoNode>
 }
 
 
-public record struct ObjectDefineDirective : IParser<AST.ObjectDefineDirective>
+public record struct ObjectDefineDirectiveParser : IParser<ObjectDefineDirective>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out AST.ObjectDefineDirective parsed, in ParseError? orError = null)
+    public readonly bool Match(ref Scanner scanner, ParseResult result, out ObjectDefineDirective parsed, in ParseError? orError = null)
     {
         var position = scanner.Position;
         CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
@@ -375,17 +388,39 @@ public record struct FunctionDefineDirectiveParser : IParser<FunctionDefineDirec
             && Terminals.Char('(', ref scanner, advance: true)
         )
         {
+            CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true);
             var func = new FunctionDefineDirective(identifier, "", new());
-            if()
+            
+            if (
+                LiteralsParser.Identifier(ref scanner, result, out var param) 
+                && CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true)
+            )
+                func.Parameters.Add(param);
             while(
-                CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true)
-                && Terminals.Char(',', ref scanner, advance: true)
-                && LiteralsParser.Identifier(ref scanner, result, out var paramId)
+                Terminals.Char(',', ref scanner, advance: true)
+                && CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true)
+                && LiteralsParser.Identifier(ref scanner, result, out param)
                 && CommonParsers.Spaces0(ref scanner, result, out _, onlyWhiteSpace: true)
 
             )
+                func.Parameters.Add(param);
+            if(!Terminals.Char(')', ref scanner, advance: true))
             {
-
+                result.Errors.Add(new("Parenthesis needs to be closed", new(scanner, scanner.Position)));
+                scanner.Position = position;
+                parsed = null!;
+                return false;
+            }
+            else
+            {
+                var startPattern = scanner.Position;
+                while(!(scanner.IsEof || Terminals.Char('\n', ref scanner) || Terminals.Literal("\r\n", ref scanner)))
+                    scanner.Advance(1);
+                func.Pattern = scanner.Memory[startPattern..scanner.Position].TrimEnd().TrimStart().ToString();
+                if(!Terminals.Char('\n', ref scanner, advance: true))
+                    Terminals.Literal("\r\n", ref scanner, advance: true);
+                parsed = func;
+                return true;
             }
         }
         else

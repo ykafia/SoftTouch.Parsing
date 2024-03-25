@@ -10,24 +10,22 @@ namespace SoftTouch.Parsing.SDSL;
 
 public class PreProcessor(Dictionary<string, Literal>? parameters = null) : IDisposable
 {
-    public List<TextLocation> CodeFragments { get; } = [];
     public Dictionary<string, Literal> Variables { get; } = parameters ?? [];
-    public CodeBuffer original = new();
-    public PreProcessedCodeBuffer processed = new(new());
+    public TokenizedCode Code = new();
 
     public PreProcessor With(string file)
     {
-        original.Add(file);
+        Code.Original.Add(file);
         return this;
     }
     public PreProcessor With(ReadOnlyMemory<char> file)
     {
-        original.Add(file);
+        Code.Original.Add(file);
         return this;
     }
     public PreProcessor With(ReadOnlySpan<char> file)
     {
-        original.Add(file);
+        Code.Original.Add(file);
         return this;
     }
 
@@ -38,16 +36,11 @@ public class PreProcessor(Dictionary<string, Literal>? parameters = null) : IDis
         var commentBlockStart = new LiteralTerminalParser("/*");
         var commentBlockEnd = new LiteralTerminalParser("*/");
 
-        var tokenized = new TokenizedCode()
-        {
-            
-        };
+        var scanner = new Scanner(Code.Original.Memory);
 
-        var scanner = new Scanner(tokenized);
-
+        var curPos = scanner.Position;
         while (!scanner.IsEof)
         {
-            var curPos = scanner.Position;
             if (
                 CommonParsers.Until<LiteralTerminalParser, LiteralTerminalParser>(
                     ref scanner,
@@ -56,25 +49,27 @@ public class PreProcessor(Dictionary<string, Literal>? parameters = null) : IDis
                 )
             )
             {
+                Code.AddToken(curPos..scanner.Position);
                 if (Terminals.Literal("//", ref scanner))
                 {
-                    var pos = scanner.Position;
                     CommonParsers.Until(ref scanner, '\n', advance: true);
-                    processed.Trim(pos, scanner.Position - pos);
+                    curPos = scanner.Position;
                 }
                 else if (Terminals.Literal("/*", ref scanner))
                 {
-                    var pos = scanner.Position;
                     CommonParsers.Until(ref scanner, "*/", advance: true);
-                    processed.Trim(pos, scanner.Position - pos);
+                    curPos = scanner.Position;
                 }
                 else throw new NotImplementedException();
             }
         }
+        if(Code.Transpositions[^1].Origin.End.Value != Code.Original.Length)
+            Code.AddToken(curPos..scanner.Position);
+
         // How to parse 
-        scanner.Position = 0;
-        var result = new ParseResult();
-        throw new NotImplementedException();
+        // scanner.Position = 0;
+        // var result = new ParseResult();
+        return "";
     }
 
     public bool Evaluate(Expression expression)
@@ -138,5 +133,5 @@ public class PreProcessor(Dictionary<string, Literal>? parameters = null) : IDis
         };
     }
 
-    public void Dispose() => processed.Dispose();
+    public void Dispose() => Code.Dispose();
 }

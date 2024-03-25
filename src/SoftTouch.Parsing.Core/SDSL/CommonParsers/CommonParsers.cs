@@ -40,4 +40,16 @@ public static class CommonParsers
             scanner.Advance(1);
         return !scanner.IsEof;
     }
+    public static bool Until<TTerminal1, TTerminal2, TTerminal3>(ref Scanner scanner, TTerminal1? terminal1 = null, TTerminal2? terminal2 = null, TTerminal3? terminal3 = null, bool advance = false)
+        where TTerminal1 : struct, ITerminal
+        where TTerminal2 : struct, ITerminal
+        where TTerminal3 : struct, ITerminal
+    {
+        var t1 = terminal1 ?? new TTerminal1();
+        var t2 = terminal2 ?? new TTerminal2();
+        var t3 = terminal3 ?? new TTerminal3();
+        while (!scanner.IsEof && !(t1.Match(ref scanner, advance) || t2.Match(ref scanner, advance) || t3.Match(ref scanner, advance)))
+            scanner.Advance(1);
+        return !scanner.IsEof;
+    }
 }

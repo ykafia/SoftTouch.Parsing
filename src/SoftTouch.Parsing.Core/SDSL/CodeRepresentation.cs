@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 
 namespace SoftTouch.Parsing.SDSL;
 
@@ -40,37 +41,52 @@ public struct StringCode : ICodeRepresentation
     public static implicit operator StringCode(string c) => new(c);
     public static implicit operator StringCode(ReadOnlyMemory<char> c) => new(c);
 
-    public void Dispose(){}
+    public readonly void Dispose(){}
 
-    public ReadOnlyMemory<char> Slice(int start, int length) => Memory.Slice(start, length);
+    public readonly ReadOnlyMemory<char> Slice(int start, int length) => Memory.Slice(start, length);
 }
 
-public record struct CodeToken(int Start, int Length, int Line, int Column);
+public record struct Transposition(Range Origin, Range Destination);
 
-
-public struct TokenizedCode : ICodeRepresentation
+public struct TokenizedCode() : ICodeRepresentation
 {
-    public List<CodeToken> Tokens { get; set; }
-    public PreProcessedCodeBuffer Processed { get; set; }
-    public readonly ReadOnlySpan<char> Span => Processed.Span;
-    public readonly ReadOnlyMemory<char> Memory => Processed.Memory;
+    public readonly char this[Index index] => Processed[index];
+
+    public readonly ReadOnlySpan<char> this[Range range] => Processed.Span[range];
+
+    public List<Transposition> Transpositions { get; } = [];
+    public CodeBuffer Original { get; } = new();
+    public PreProcessedCodeBuffer Processed { get; } = new();
     public int Position { get; set; }
     public readonly int Length => Processed.Length;
 
-    public readonly char this[Index index] => Span[index];
+    public readonly ReadOnlySpan<char> Span => Processed.Span;
 
-    public readonly ReadOnlySpan<char> this[Range range] => Span[range];
+    public readonly ReadOnlyMemory<char> Memory => Processed.Memory;
 
-
-    public TokenizedCode()
+    public readonly void Dispose()
     {
-        Processed = new();
-        Tokens = [];
-    }
-
-    public readonly void Dispose() 
-    {
+        Original.Dispose();
         Processed.Dispose();
     }
-    public readonly ReadOnlyMemory<char> Slice(int start, int length) => Memory.Slice(start, length);
+
+    public readonly ReadOnlyMemory<char> Slice(int start, int length)
+        => Memory.Slice(start, length);
+
+
+    public readonly void AddToken(in Range location)
+    {
+        Processed.Add(Original[location]);
+        var (_, length) = location.GetOffsetAndLength(Original.Length);
+        Transpositions.Add(new(location, new(Processed.Length - length, Processed.Length)));
+    }
+
+
+    public readonly override string ToString()
+    {
+        var builder = new StringBuilder();
+        foreach(var e in Transpositions)
+            builder.Append(Processed[e.Destination]);
+        return builder.ToString();
+    }
 }
