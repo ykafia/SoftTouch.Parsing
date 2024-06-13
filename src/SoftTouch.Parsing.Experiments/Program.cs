@@ -5,6 +5,8 @@ using System.Runtime.InteropServices;
 using SoftTouch.Parsing.SDSL;
 using SoftTouch.Parsing.SDSL.AST;
 
+var scanner = new Scanner("");
+
 // var result = Grammar.Match<PostfixParser, Expression>("machin.chose().hello.world[3]-2*(3+ hello.world())");
 // var result = Grammar.Match<ExpressionParser, Expression>("5 ?2: machin.  chose()  .   hello.world [  3 ]  -   2 *(3+ hello.world())");
 var path = @"C:\Users\youness_kafia\Documents\dotnetProjs\SoftTouch.Parsing\assets";
@@ -14,11 +16,7 @@ var file = File.ReadAllText("./SDSL/Commented.sdsl");
 var match = Grammar.Match<PreprocessorParser, PreProcessableCode>(file);
 if(match.AST is not null)
     Console.WriteLine(match.AST);
-using var preprocessor = new PreProcessor();
 
-preprocessor.With(file);
-preprocessor.PreProcess();
-Console.WriteLine($"Preprocessed is :\n{preprocessor.Code}");
 
 
 // file = Grammar.MatchTyped<CodeNodeParsers, CodeSnippets>(file).AST?.ToCode() ?? "";

@@ -5,7 +5,8 @@ namespace SoftTouch.Parsing.SDSL;
 
 public struct NumberParser : IParser<NumberLiteral>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out NumberLiteral parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out NumberLiteral parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var fp = new FloatParser();
         var ip = new IntegerParser();
@@ -29,8 +30,8 @@ public struct NumberParser : IParser<NumberLiteral>
 
 public struct IntegerParser : IParser<IntegerLiteral>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out IntegerLiteral node, in ParseError? orError = null)
-
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out IntegerLiteral node, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var position = scanner.Position;
         IntegerSuffixParser suffix = new();
@@ -47,14 +48,13 @@ public struct IntegerParser : IParser<IntegerLiteral>
             else
             {
                 var memory = scanner.Memory[position..scanner.Position];
-                node = new(new(32, false, true), long.Parse(memory.Span), new(scanner.Line, scanner.Column - memory.Length, memory));
+                node = new(new(32, false, true), long.Parse(memory.Span), new(scanner.Memory, position..scanner.Position));
                 return true;
             }
         }
         else if (Terminals.Char('0', ref scanner, advance: true) && !Terminals.Digit(ref scanner, DigitMode.All))
         {
-            var memory = scanner.Memory[position..scanner.Position];
-            node = new(new(32, false, true), 0, new(scanner.Line, scanner.Column - memory.Length, memory));
+            node = new(new(32, false, true), 0, new(scanner.Memory, position..scanner.Position));
             return true;
         }
         else
@@ -70,8 +70,8 @@ public struct IntegerParser : IParser<IntegerLiteral>
 
 public struct FloatParser : IParser<FloatLiteral>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out FloatLiteral node, in ParseError? orError = null)
-
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out FloatLiteral node, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var position = scanner.Position;
         node = null!;
@@ -82,7 +82,7 @@ public struct FloatParser : IParser<FloatLiteral>
             while (Terminals.Digit(ref scanner, advance: true)) ;
 
             if (suffix.Match(ref scanner, result, out Suffix s))
-                node = new FloatLiteral(s, double.Parse(scanner.Span[position..scanner.Position]), new(scanner.Line, scanner.Column - (scanner.Position - position), scanner.Memory[position..scanner.Position]));
+                node = new FloatLiteral(s, double.Parse(scanner.Span[position..scanner.Position]), new(scanner.Memory, position..scanner.Position));
             return true;
         }
         else if (Terminals.Digit(ref scanner, DigitMode.ExceptZero, advance: true))
@@ -104,7 +104,7 @@ public struct FloatParser : IParser<FloatLiteral>
                     break;
                 else
                     len += 1;
-            node = new FloatLiteral(s, double.Parse(scanner.Span[position..len]), new(scanner.Line, scanner.Column - (scanner.Position - position), scanner.Memory[position..scanner.Position]));
+            node = new FloatLiteral(s, double.Parse(scanner.Span[position..len]), new(scanner.Memory, position..scanner.Position));
 
             return true;
         }
@@ -118,7 +118,7 @@ public struct FloatParser : IParser<FloatLiteral>
                     if (!suffix.Match(ref scanner, result, out s))
                         s = new(32, true, true);
             }
-            node = new FloatLiteral(s, double.Parse(scanner.Span[position..scanner.Position]), new(scanner.Line, scanner.Column - (scanner.Position - position), scanner.Memory[position..scanner.Position]));
+            node = new FloatLiteral(s, double.Parse(scanner.Span[position..scanner.Position]), new(scanner.Memory, position..scanner.Position));
             return true;
         }
         else
@@ -132,7 +132,8 @@ public struct FloatParser : IParser<FloatLiteral>
 }
 public struct HexParser : IParser<HexLiteral>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out HexLiteral node, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out HexLiteral node, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         node = null!;
         var position = scanner.Position;
@@ -148,7 +149,7 @@ public struct HexParser : IParser<HexLiteral>
                 var add = v * Math.Pow(16, i);
                 if (ulong.MaxValue - sum < add)
                 {
-                    result.Errors.Add(new ParseError("Hex value bigger than ulong.", new(scanner, position)));
+                    result.Errors.Add(new ParseError("Hex value bigger than ulong.", scanner.CreateError(position)));
                     return false;
                 }
             }

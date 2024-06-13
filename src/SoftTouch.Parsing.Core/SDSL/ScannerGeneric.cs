@@ -1,15 +1,14 @@
-using SoftTouch.Parsing.SDSL.AST;
-using SoftTouch.Parsing.SDSL.PreProcessing;
-
 namespace SoftTouch.Parsing.SDSL;
 
-public struct Scanner(string code) : IScanner
+
+
+public struct Scanner<T>(T code) : IScanner
+    where T : IScannableCode
 {
     readonly int start = 0;
-    // public string Code { get; } = code;
-    public readonly ReadOnlySpan<char> Span => Code.AsSpan();
-    public readonly ReadOnlyMemory<char> Memory => Code.AsMemory();
-    string Code { get; set; } = code;
+    public readonly ReadOnlySpan<char> Span => Code.Span;
+    public readonly ReadOnlyMemory<char> Memory => Code.Memory;
+    public T Code { get; set; } = code;
     public int Position { get; set; } = 0;
 
     public readonly int Line => Span[..Position].Count('\n') + 1;
@@ -106,12 +105,9 @@ public struct Scanner(string code) : IScanner
     {
         return new(Memory, new(position, position + length));
     }
-    public readonly ErrorLocation CreateError(int position)
+
+    public ErrorLocation CreateError(int position)
     {
         throw new NotImplementedException();
     }
 }
-
-
-
-
