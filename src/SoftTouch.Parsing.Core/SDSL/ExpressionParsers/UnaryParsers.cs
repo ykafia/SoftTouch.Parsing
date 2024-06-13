@@ -5,16 +5,22 @@ namespace SoftTouch.Parsing.SDSL;
 
 public record struct UnaryParsers
 {
-    internal static bool Not(ref Scanner scanner, ParseResult result, out Expression cast, in ParseError? orError = null)
+    internal static bool Not<TScanner>(ref TScanner scanner, ParseResult result, out Expression cast, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new NotExpressionParser().Match(ref scanner, result, out cast, in orError);
-    internal static bool Signed(ref Scanner scanner, ParseResult result, out Expression cast, in ParseError? orError = null)
+    internal static bool Signed<TScanner>(ref TScanner scanner, ParseResult result, out Expression cast, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new SignExpressionParser().Match(ref scanner, result, out cast, in orError);
-    internal static bool PrefixIncrement(ref Scanner scanner, ParseResult result, out Expression cast, in ParseError? orError = null)
+    internal static bool PrefixIncrement<TScanner>(ref TScanner scanner, ParseResult result, out Expression cast, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new PrefixIncrementParser().Match(ref scanner, result, out cast, in orError);
-    internal static bool Cast(ref Scanner scanner, ParseResult result, out Expression cast, in ParseError? orError = null)
+    internal static bool Cast<TScanner>(ref TScanner scanner, ParseResult result, out Expression cast, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new CastExpressionParser().Match(ref scanner, result, out cast, in orError);
-    public static bool Prefix(ref Scanner scanner, ParseResult result, out Expression prefix, in ParseError? orError = null)
+    public static bool Prefix<TScanner>(ref TScanner scanner, ParseResult result, out Expression prefix, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new PrefixParser().Match(ref scanner, result, out prefix, in orError);
-    public static bool Postfix(ref Scanner scanner, ParseResult result, out Expression postfix, in ParseError? orError = null)
+    public static bool Postfix<TScanner>(ref TScanner scanner, ParseResult result, out Expression postfix, in ParseError? orError = null)
+        where TScanner : struct, IScanner
        => new PostfixParser().Match(ref scanner, result, out postfix, in orError);
 }

@@ -5,7 +5,8 @@ namespace SoftTouch.Parsing.SDSL;
 
 public record struct Space0(bool OnlyWhiteSpace) : IParser<NoNode>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out NoNode parsed, in ParseError? error = null!)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out NoNode parsed, in ParseError? error = null!)
+        where TScanner : struct, IScanner
     {
         parsed = null!;
         if (!OnlyWhiteSpace)
@@ -25,7 +26,8 @@ public record struct Space0(bool OnlyWhiteSpace) : IParser<NoNode>
 
 public record struct Space1(bool OnlyWhiteSpace) : IParser<NoNode>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out NoNode parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out NoNode parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         parsed = null!;
         if (!OnlyWhiteSpace)

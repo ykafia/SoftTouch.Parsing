@@ -4,7 +4,8 @@ namespace SoftTouch.Parsing.SDSL;
 
 public struct ExpressionParser : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         if (Ternary(ref scanner, result, out parsed))
             return true;
@@ -16,36 +17,49 @@ public struct ExpressionParser : IParser<Expression>
         }
     }
 
-    public static bool Expression(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public static bool Expression<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new ExpressionParser().Match(ref scanner, result, out parsed, in orError);
-    public static bool Add(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public static bool Add<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new AdditionParser().Match(ref scanner, result, out parsed, in orError);
-    public static bool Mul(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public static bool Mul<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new MultiplicationParser().Match(ref scanner, result, out parsed, in orError);
-    public static bool Shift(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public static bool Shift<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new BitwiseShiftParser().Match(ref scanner, result, out parsed, in orError);
-    public static bool Relation(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public static bool Relation<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new RelationalParser().Match(ref scanner, result, out parsed, in orError);
-    public static bool Equality(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public static bool Equality<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new EqualityParser().Match(ref scanner, result, out parsed, in orError);
-    public static bool BAnd(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public static bool BAnd<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new BitwiseAndParser().Match(ref scanner, result, out parsed, in orError);
-    public static bool BOr(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public static bool BOr<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new BitwiseOrParser().Match(ref scanner, result, out parsed, in orError);
-    public static bool XOr(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public static bool XOr<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new BitwiseXOrParser().Match(ref scanner, result, out parsed, in orError);
-    public static bool And(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public static bool And<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new AndParser().Match(ref scanner, result, out parsed, in orError);
-    public static bool Or(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public static bool Or<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new OrParser().Match(ref scanner, result, out parsed, in orError);
-    public static bool Ternary(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public static bool Ternary<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new TernaryParser().Match(ref scanner, result, out parsed, in orError);
 }
 
 
 public record struct TernaryParser : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var position = scanner.Position;
         if (ExpressionParser.Or(ref scanner, result, out parsed))
@@ -55,11 +69,11 @@ public record struct TernaryParser : IParser<Expression>
             if (
                 Terminals.Char('?', ref scanner, advance: true)
                 && CommonParsers.Spaces0(ref scanner, result, out _)
-                && ExpressionParser.Expression(ref scanner, result, out var left, new("Expected expression", new(scanner, scanner.Position)))
+                && ExpressionParser.Expression(ref scanner, result, out var left, new("Expected expression", scanner.CreateError(scanner.Position)))
                 && CommonParsers.Spaces0(ref scanner, result, out _)
                 && Terminals.Char(':', ref scanner, advance: true)
                 && CommonParsers.Spaces0(ref scanner, result, out _)
-                && ExpressionParser.Expression(ref scanner, result, out var right, new("Expected expression", new(scanner, scanner.Position)))
+                && ExpressionParser.Expression(ref scanner, result, out var right, new("Expected expression", scanner.CreateError(scanner.Position)))
             )
             {
                 parsed = new TernaryExpression(parsed, left, right, scanner.GetLocation(position, scanner.Position - position));
@@ -83,7 +97,8 @@ public record struct TernaryParser : IParser<Expression>
 
 public record struct OrParser() : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var position = scanner.Position;
         var ws0 = new Space0();
@@ -132,7 +147,8 @@ public record struct OrParser() : IParser<Expression>
 
 public record struct AndParser() : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var position = scanner.Position;
         var ws0 = new Space0();
@@ -183,7 +199,8 @@ public record struct AndParser() : IParser<Expression>
 
 public record struct BitwiseOrParser() : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var position = scanner.Position;
         var ws0 = new Space0();
@@ -231,7 +248,8 @@ public record struct BitwiseOrParser() : IParser<Expression>
 }
 public record struct BitwiseXOrParser() : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var position = scanner.Position;
         var ws0 = new Space0();
@@ -279,7 +297,8 @@ public record struct BitwiseXOrParser() : IParser<Expression>
 }
 public record struct BitwiseAndParser() : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var position = scanner.Position;
         var ws0 = new Space0();
@@ -330,7 +349,8 @@ public record struct BitwiseAndParser() : IParser<Expression>
 
 public record struct EqualityParser() : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var position = scanner.Position;
         var ws0 = new Space0();
@@ -379,7 +399,8 @@ public record struct EqualityParser() : IParser<Expression>
 
 public record struct RelationalParser() : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var position = scanner.Position;
         var ws0 = new Space0();
@@ -452,7 +473,8 @@ public record struct RelationalParser() : IParser<Expression>
 
 public record struct BitwiseShiftParser() : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var position = scanner.Position;
         var ws0 = new Space0();
@@ -501,7 +523,8 @@ public record struct BitwiseShiftParser() : IParser<Expression>
 
 public record struct AdditionParser() : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var position = scanner.Position;
         var ws0 = new Space0();
@@ -550,7 +573,8 @@ public record struct AdditionParser() : IParser<Expression>
 
 public record struct MultiplicationParser() : IParser<Expression>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var position = scanner.Position;
         var ws0 = new Space0();

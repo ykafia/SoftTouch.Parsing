@@ -5,7 +5,8 @@ namespace SoftTouch.Parsing.SDSL;
 
 public record struct ShaderMethodParsers : IParser<ShaderElement>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out ShaderElement parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out ShaderElement parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         if(Simple(ref scanner, result, out var method, in orError))
         {
@@ -19,18 +20,20 @@ public record struct ShaderMethodParsers : IParser<ShaderElement>
         }
     }
 
-    public static bool Simple(ref Scanner scanner, ParseResult result, out ShaderMethod parsed, in ParseError? orError = null)
+    public static bool Simple<TScanner>(ref TScanner scanner, ParseResult result, out ShaderMethod parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new SimpleMethodParser().Match(ref scanner, result, out parsed, in orError);
 }
 
 public record struct SimpleMethodParser : IParser<ShaderMethod>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out ShaderMethod parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out ShaderMethod parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var position = scanner.Position;
         if (
             LiteralsParser.Identifier(ref scanner, result, out var typename)
-            && CommonParsers.Spaces1(ref scanner, result, out _, new("Expected at least one space", new(scanner, scanner.Position)))
+            && CommonParsers.Spaces1(ref scanner, result, out _, new("Expected at least one space", scanner.CreateError(scanner.Position)))
             && LiteralsParser.Identifier(ref scanner, result, out var methodName)
             && CommonParsers.Spaces0(ref scanner, result, out _)
             && Terminals.Char('(', ref scanner, advance: true)

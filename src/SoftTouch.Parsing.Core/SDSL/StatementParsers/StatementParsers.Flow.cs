@@ -6,7 +6,8 @@ namespace SoftTouch.Parsing.SDSL;
 
 public record struct IfStatementParser : IParser<Statement>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out Statement parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         throw new NotImplementedException();
         // var position = scanner.Position;
@@ -25,7 +26,7 @@ public record struct IfStatementParser : IParser<Statement>
         //     else
         //     {
         //         parsed = null!;
-        //         result.Errors.Add(new("Expected parenthesis", new(scanner, scanner.Position)));
+        //         result.Errors.Add(new("Expected parenthesis", scanner.CreateError(scanner.Position)));
         //         return false;
         //     }
 

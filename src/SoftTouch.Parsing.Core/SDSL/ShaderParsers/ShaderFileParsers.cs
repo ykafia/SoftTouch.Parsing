@@ -7,11 +7,12 @@ namespace SoftTouch.Parsing.SDSL;
 
 public record struct ShaderFileParser : IParser<ShaderFile>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out ShaderFile parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out ShaderFile parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var position = scanner.Position;
         CommonParsers.Spaces0(ref scanner, result, out _);
-        var file = new ShaderFile(new(0,0,scanner.Memory));
+        var file = new ShaderFile(new(scanner.Memory, ..));
         while (!scanner.IsEof)
         {
             if (
@@ -40,7 +41,8 @@ public record struct ShaderFileParser : IParser<ShaderFile>
 
 public record struct NamespaceParsers : IParser<ShaderNamespace>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out ShaderNamespace parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out ShaderNamespace parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var position = scanner.Position;
         if (
@@ -55,7 +57,7 @@ public record struct NamespaceParsers : IParser<ShaderNamespace>
                     ns.NamespacePath.Add(identifier);
                 else 
                 {
-                    result.Errors.Add(new("Expected identifier", new(scanner,scanner.Position)));
+                    result.Errors.Add(new("Expected identifier", scanner.CreateError(scanner.Position)));
                     scanner.Position = scanner.Span.Length;
                 }
                 CommonParsers.Spaces0(ref scanner, result, out _);
@@ -80,7 +82,7 @@ public record struct NamespaceParsers : IParser<ShaderNamespace>
                         ns.ShaderClasses.Add(shader);
                     else 
                     {
-                        result.Errors.Add(new("Expected shader class", new(scanner, scanner.Position)));
+                        result.Errors.Add(new("Expected shader class", scanner.CreateError(scanner.Position)));
                         scanner.Position = scanner.Span.Length;
                         parsed = null!;
                         return false;
@@ -101,6 +103,7 @@ public record struct NamespaceParsers : IParser<ShaderNamespace>
         return false;
     }
 
-    public static bool Namespace(ref Scanner scanner, ParseResult result, out ShaderNamespace parsed, in ParseError? orError = null)
+    public static bool Namespace<TScanner>(ref TScanner scanner, ParseResult result, out ShaderNamespace parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new NamespaceParsers().Match(ref scanner, result, out parsed, orError);
 }

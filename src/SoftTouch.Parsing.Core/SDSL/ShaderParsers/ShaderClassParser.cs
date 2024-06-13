@@ -6,31 +6,36 @@ namespace SoftTouch.Parsing.SDSL;
 
 public record struct ShaderClassParsers : IParser<ShaderClass>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out ShaderClass parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out ShaderClass parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         if(SimpleClass(ref scanner, result, out parsed, in orError))
             return true;
         else 
             return false;
     }
-    public static bool Class(ref Scanner scanner, ParseResult result, out ShaderClass parsed, in ParseError? orError = null)
+    public static bool Class<TScanner>(ref TScanner scanner, ParseResult result, out ShaderClass parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new ShaderClassParsers().Match(ref scanner, result, out parsed, in orError);
-    public static bool SimpleClass(ref Scanner scanner, ParseResult result, out ShaderClass parsed, in ParseError? orError = null)
+    public static bool SimpleClass<TScanner>(ref TScanner scanner, ParseResult result, out ShaderClass parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
         => new SimpleShaderClassParser().Match(ref scanner, result, out parsed, in orError);
-    public static bool GenericsDefinition(ref Scanner scanner, ParseResult result, out ShaderGenerics parsed)
+    public static bool GenericsDefinition<TScanner>(ref TScanner scanner, ParseResult result, out ShaderGenerics parsed)
+        where TScanner : struct, IScanner
         => new ShaderGenericsDefinitionParser().Match(ref scanner, result, out parsed);
 }
 
 public record struct SimpleShaderClassParser : IParser<ShaderClass>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out ShaderClass parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out ShaderClass parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var position = scanner.Position;
 
         if(
             Terminals.Literal("shader", ref scanner, advance: true)
-            && CommonParsers.Spaces1(ref scanner, result, out _, new("Expected at least one space", new(scanner, scanner.Position)))
-            && LiteralsParser.Identifier(ref scanner, result, out var className, new("Expected class name", new(scanner, scanner.Position)))
+            && CommonParsers.Spaces1(ref scanner, result, out _, new("Expected at least one space", scanner.CreateError(scanner.Position)))
+            && LiteralsParser.Identifier(ref scanner, result, out var className, new("Expected class name", scanner.CreateError(scanner.Position)))
             && CommonParsers.Spaces0(ref scanner, result, out _)
             && Terminals.Char('{', ref scanner, advance: true)
             && CommonParsers.Spaces0(ref scanner, result, out _)
@@ -60,14 +65,15 @@ public record struct SimpleShaderClassParser : IParser<ShaderClass>
 
 public record struct ShaderClassParser : IParser<ShaderClass>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out ShaderClass parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out ShaderClass parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var position = scanner.Position;
 
         if (
             Terminals.Literal("shader", ref scanner, advance: true)
-            && CommonParsers.Spaces1(ref scanner, result, out _, new("Expected at least one space", new(scanner, scanner.Position)))
-            && LiteralsParser.Identifier(ref scanner, result, out var className, new("Expected class name", new(scanner, scanner.Position)))
+            && CommonParsers.Spaces1(ref scanner, result, out _, new("Expected at least one space", scanner.CreateError(scanner.Position)))
+            && LiteralsParser.Identifier(ref scanner, result, out var className, new("Expected class name", scanner.CreateError(scanner.Position)))
             && CommonParsers.Spaces0(ref scanner, result, out _)
         )
         {
@@ -81,7 +87,7 @@ public record struct ShaderClassParser : IParser<ShaderClass>
                         c.Generics.Add(gen);
                     else 
                     {
-                        result.Errors.Add(new("Expected generics definition", new(scanner, scanner.Position)));
+                        result.Errors.Add(new("Expected generics definition", scanner.CreateError(scanner.Position)));
                         scanner.Position = scanner.Span.Length;
                         parsed = null!;
                         return false;
@@ -97,7 +103,7 @@ public record struct ShaderClassParser : IParser<ShaderClass>
                 }
                 else 
                 {
-                    result.Errors.Add(new("Expected shader element", new(scanner, scanner.Position)));
+                    result.Errors.Add(new("Expected shader element", scanner.CreateError(scanner.Position)));
                     scanner.Position = scanner.Span.Length;
                     parsed = null!;
                     return false;
@@ -120,12 +126,13 @@ public record struct ShaderClassParser : IParser<ShaderClass>
 
 public record struct ShaderGenericsDefinitionParser : IParser<ShaderGenerics>
 {
-    public readonly bool Match(ref Scanner scanner, ParseResult result, out ShaderGenerics parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out ShaderGenerics parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
     {
         var position = scanner.Position;
         if(
             LiteralsParser.Identifier(ref scanner, result, out var typename)
-            && CommonParsers.Spaces1(ref scanner, result, out _, new("Expected at least one space", new(scanner,scanner.Position)))
+            && CommonParsers.Spaces1(ref scanner, result, out _, new("Expected at least one space", scanner.CreateError(scanner.Position)))
             && LiteralsParser.Identifier(ref scanner, result, out var identifier)
         )
         {

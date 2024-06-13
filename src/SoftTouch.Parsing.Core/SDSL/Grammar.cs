@@ -14,7 +14,7 @@ public static class Grammar
         if (p.Match(ref scanner, result, out var fnum))
             result.AST = fnum;
         if(!Terminals.EOF(ref scanner))
-            result.Errors.Add(new("Expected end of file", new(scanner, scanner.Position)));
+            result.Errors.Add(new("Expected end of file", scanner.CreateError(scanner.Position)));
         return result;
     }
     public static ParseResult<TValue> MatchTyped<TParser, TValue>(string code, TParser? parser = null)
