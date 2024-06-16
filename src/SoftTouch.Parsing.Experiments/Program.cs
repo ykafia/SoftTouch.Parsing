@@ -4,18 +4,24 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using SoftTouch.Parsing.SDSL;
 using SoftTouch.Parsing.SDSL.AST;
+using SoftTouch.Parsing.SDSL.PreProcessing;
 
 var scanner = new Scanner("");
 
 // var result = Grammar.Match<PostfixParser, Expression>("machin.chose().hello.world[3]-2*(3+ hello.world())");
 // var result = Grammar.Match<ExpressionParser, Expression>("5 ?2: machin.  chose()  .   hello.world [  3 ]  -   2 *(3+ hello.world())");
-var path = @"C:\Users\youness_kafia\Documents\dotnetProjs\SoftTouch.Parsing\assets";
-// var path = @"C:\Users\kafia\source\repos\ykafia\SoftTouch.Parsing\assets";
+// var path = @"C:\Users\youness_kafia\Documents\dotnetProjs\SoftTouch.Parsing\assets";
+var path = @"C:\Users\kafia\source\repos\ykafia\SoftTouch.Parsing\assets";
 Directory.SetCurrentDirectory(path);
 var file = File.ReadAllText("./SDSL/Commented.sdsl");
-var match = Grammar.Match<PreprocessorParser, PreProcessableCode>(file);
-if(match.AST is not null)
-    Console.WriteLine(match.AST);
+var pp = new CommentPreProcessor(file.AsMemory());
+Console.WriteLine(pp.Processed.ToString());
+Console.WriteLine(pp.GetOriginalRanges(83..300));
+
+var x = 0;
+// var match = Grammar.Match<PreprocessorParser, PreProcessableCode>(file);
+// if(match.AST is not null)
+//     Console.WriteLine(match.AST);
 
 
 

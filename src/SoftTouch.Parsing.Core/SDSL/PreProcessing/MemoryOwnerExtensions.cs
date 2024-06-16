@@ -12,4 +12,21 @@ public static class MemoryOwnerExtensions
         owner.Dispose();
         return result;
     }
+
+    public static MemoryOwner<T> Add<T>(this MemoryOwner<T> owner, ReadOnlySpan<T> span)
+    {
+        var result = owner.Resize(span.Length);
+        span.CopyTo(result.Span[^span.Length..]);
+        return result;
+    }
+    public static MemoryOwner<T> Add<T>(this MemoryOwner<T> owner, Span<T> span)
+    {
+        var result = owner.Resize(span.Length);
+        span.CopyTo(result.Span[^span.Length..]);
+        return result;
+    }
+    public static MemoryOwner<T> Add<T>(this MemoryOwner<T> owner, Memory<T> other, Range range)
+    {
+        return owner.Add(other.Span[range]);
+    }
 }
