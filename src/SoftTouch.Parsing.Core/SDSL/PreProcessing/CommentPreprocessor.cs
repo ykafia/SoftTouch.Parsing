@@ -3,13 +3,22 @@ using CommunityToolkit.HighPerformance.Buffers;
 namespace SoftTouch.Parsing.SDSL.PreProcessing;
 
 
-public struct CommentPreProcessor
+public struct CommentProcessedCode : IScannableCode
 {
     public ReadOnlyMemory<char> Original { get; set; }
     public MemoryOwner<char> Processed { get; set; } = MemoryOwner<char>.Empty;
     public List<TextLink> Links { get; } = [];
 
-    public CommentPreProcessor(ReadOnlyMemory<char> originalFile)
+    public readonly ReadOnlySpan<char> Span => Memory.Span;
+
+    public readonly ReadOnlyMemory<char> Memory => Processed.Memory;
+
+    public CommentProcessedCode(string originalFile)
+    {
+        Original = originalFile.AsMemory();
+        Process();
+    }
+    public CommentProcessedCode(ReadOnlyMemory<char> originalFile)
     {
         Original = originalFile;
         Process();

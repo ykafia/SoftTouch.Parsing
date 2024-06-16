@@ -14,9 +14,9 @@ var scanner = new Scanner("");
 var path = @"C:\Users\kafia\source\repos\ykafia\SoftTouch.Parsing\assets";
 Directory.SetCurrentDirectory(path);
 var file = File.ReadAllText("./SDSL/Commented.sdsl");
-var pp = new CommentPreProcessor(file.AsMemory());
+var pp = new CommentProcessedCode(file.AsMemory());
 Console.WriteLine(pp.Processed.ToString());
-Console.WriteLine(pp.GetOriginalRanges(83..300));
+Console.WriteLine(pp.GetOriginalRanges(83..200));
 
 var x = 0;
 // var match = Grammar.Match<PreprocessorParser, PreProcessableCode>(file);
