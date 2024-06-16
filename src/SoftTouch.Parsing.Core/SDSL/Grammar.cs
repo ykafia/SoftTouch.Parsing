@@ -17,6 +17,24 @@ public static class Grammar
             result.Errors.Add(new("Expected end of file", scanner.CreateError(scanner.Position)));
         return result;
     }
+
+    public static ParseResult Match<TScannable, TParser, TValue>(TScannable code, TParser? parser = null)
+        where TScannable : IScannableCode
+        where TValue : Node
+        where TParser : struct, IParser<TValue>
+    {
+        var p = parser ?? new TParser();
+        var scanner = new Scanner<TScannable>(code);
+
+        var result = new ParseResult();
+        if (p.Match(ref scanner, result, out var fnum))
+            result.AST = fnum;
+        if(!Terminals.EOF(ref scanner))
+            result.Errors.Add(new("Expected end of file", scanner.CreateError(scanner.Position)));
+        return result;
+    }
+
+
     public static ParseResult<TValue> MatchTyped<TParser, TValue>(string code, TParser? parser = null)
         where TValue : Node
         where TParser : struct, IParser<TValue>

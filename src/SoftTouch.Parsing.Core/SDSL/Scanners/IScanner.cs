@@ -1,5 +1,13 @@
 namespace SoftTouch.Parsing.SDSL;
 
+
+public interface IScanner<TScannable> : IScanner
+    where TScannable : IScannableCode
+{
+    TScannable Code { get; init; }
+}
+
+
 public interface IScanner
 {
     public ReadOnlySpan<char> Span { get; }

@@ -6,25 +6,35 @@ namespace SoftTouch.Parsing.SDSL;
 
 public static class Terminals
 {
-    public static bool AnyChar<TScanner>(ref TScanner scanner) where TScanner : struct, IScanner
+    public static bool AnyChar<TScanner>(ref TScanner scanner) 
+        where TScanner : struct, IScanner
         => !scanner.IsEof;
-    public static bool Char<TScanner>(char c, ref TScanner scanner, bool advance = false) where TScanner : struct, IScanner
+    public static bool Char<TScanner>(char c, ref TScanner scanner, bool advance = false) 
+        where TScanner : struct, IScanner
          => new CharTerminalParser(c).Match(ref scanner, advance);
-    public static bool Set<TScanner>(string set, ref TScanner scanner, bool advance = false) where TScanner : struct, IScanner
+    public static bool Set<TScanner>(string set, ref TScanner scanner, bool advance = false) 
+        where TScanner : struct, IScanner
         => new SetTerminalParser(set).Match(ref scanner, advance);
-    public static bool Literal<TScanner>(string c, ref TScanner scanner, bool advance = false) where TScanner : struct, IScanner
+    public static bool Literal<TScanner>(string c, ref TScanner scanner, bool advance = false) 
+        where TScanner : struct, IScanner
         => new LiteralTerminalParser(c).Match(ref scanner, advance);
-    public static bool Digit<TScanner>(ref TScanner scanner, DigitMode mode = DigitMode.All, bool advance = false) where TScanner : struct, IScanner
+    public static bool Digit<TScanner>(ref TScanner scanner, DigitMode mode = DigitMode.All, bool advance = false) 
+        where TScanner : struct, IScanner
         => new DigitTerminalParser(mode).Match(ref scanner, advance);
-    public static bool Letter<TScanner>(ref TScanner scanner, bool advance = false) where TScanner : struct, IScanner
+    public static bool Letter<TScanner>(ref TScanner scanner, bool advance = false) 
+        where TScanner : struct, IScanner
         => new LetterTerminalParser().Match(ref scanner, advance);
-    public static bool LetterOrDigit<TScanner>(ref TScanner scanner, bool advance = false) where TScanner : struct, IScanner
+    public static bool LetterOrDigit<TScanner>(ref TScanner scanner, bool advance = false) 
+        where TScanner : struct, IScanner
         => new LetterOrDigitTerminalParser().Match(ref scanner, advance);
-    public static bool IdentifierFirstChar<TScanner>(ref TScanner scanner, bool advance = false) where TScanner : struct, IScanner
-                => Letter(ref scanner, advance) || Char('_', ref scanner, advance);
-    public static bool EOL<TScanner>(ref TScanner scanner, bool advance = false) where TScanner : struct, IScanner
+    public static bool IdentifierFirstChar<TScanner>(ref TScanner scanner, bool advance = false) 
+        where TScanner : struct, IScanner
+        => Letter(ref scanner, advance) || Char('_', ref scanner, advance);
+    public static bool EOL<TScanner>(ref TScanner scanner, bool advance = false) 
+        where TScanner : struct, IScanner
         => new EOLTerminalParser().Match(ref scanner, advance);
-    public static bool EOF<TScanner>(ref TScanner scanner) where TScanner : struct, IScanner
+    public static bool EOF<TScanner>(ref TScanner scanner) 
+        where TScanner : struct, IScanner
         => new EOFTerminalParser().Match(ref scanner, false);
 }
 

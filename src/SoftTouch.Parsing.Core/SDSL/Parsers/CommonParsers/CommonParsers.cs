@@ -19,10 +19,23 @@ public static class CommonParsers
             scanner.Advance(1);
         return scanner.IsEof;
     }
-    public static bool Until(ref Scanner scanner, string value, bool advance = false)
+    public static bool Until<TScanner>(ref TScanner scanner, string value, bool advance = false)
+        where TScanner : struct, IScanner
     {
         while (!scanner.IsEof && !Terminals.Literal(value, ref scanner, advance))
             scanner.Advance(1);
+        return scanner.IsEof;
+    }
+    public static bool Until<TScanner>(ref TScanner scanner, ReadOnlySpan<string> values, bool advance = false)
+        where TScanner : struct, IScanner
+    {
+        while (!scanner.IsEof)
+        {
+            foreach (var value in values)
+                if (Terminals.Literal(value, ref scanner, advance))
+                    return scanner.IsEof;
+            scanner.Advance(1);
+        }
         return scanner.IsEof;
     }
     public static bool Until<TScanner, TTerminal>(ref Scanner scanner, bool advance = false)
