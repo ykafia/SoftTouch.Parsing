@@ -1,6 +1,6 @@
 using CommunityToolkit.HighPerformance.Buffers;
 
-namespace SoftTouch.Parsing.SDSL.PreProcessing;
+namespace SoftTouch.Parsing.SDSL.PreProcessing.Macros;
 
 public class SDSLPreProcessor() : IDisposable
 {

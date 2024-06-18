@@ -1,4 +1,4 @@
-namespace SoftTouch.Parsing.SDSL.PreProcessing;
+namespace SoftTouch.Parsing.SDSL.PreProcessing.Macros;
 
 public record struct CodeFrameSnippets(CodeFrame Frame, Range Location)
 {

@@ -3,7 +3,7 @@ using System.Security.Cryptography.X509Certificates;
 using CommunityToolkit.HighPerformance;
 using CommunityToolkit.HighPerformance.Buffers;
 
-namespace SoftTouch.Parsing.SDSL.PreProcessing;
+namespace SoftTouch.Parsing.SDSL.PreProcessing.Macros;
 
 
 public class LocationTranslator(Memory<char> origin, Memory<char> processed)
