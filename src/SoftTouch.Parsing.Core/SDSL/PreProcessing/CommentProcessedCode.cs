@@ -2,12 +2,14 @@ using CommunityToolkit.HighPerformance.Buffers;
 
 namespace SoftTouch.Parsing.SDSL.PreProcessing;
 
-
+/// <summary>
+/// Representation of the code where comments have been removed
+/// </summary>
 public struct CommentProcessedCode : IScannableCode
 {
     public ReadOnlyMemory<char> Original { get; set; }
     public MemoryOwner<char> Processed { get; set; } = MemoryOwner<char>.Empty;
-    public List<TextLink> Links { get; } = [];
+    public MemoryOwner<TextLink> Links { get; } = MemoryOwner<TextLink>.Empty;
 
     public readonly ReadOnlySpan<char> Span => Memory.Span;
 
@@ -61,7 +63,7 @@ public struct CommentProcessedCode : IScannableCode
     {
         (_, var length) = range.GetOffsetAndLength(Original.Length);
         Processed = Processed.Add(Original.Span[range]);
-        Links.Add(new(range, (Processed.Length - length)..Processed.Length));
+        Links.Add([new(range, (Processed.Length - length)..Processed.Length)]);
 
     }
     internal void Add(Span<char> span)
@@ -73,12 +75,12 @@ public struct CommentProcessedCode : IScannableCode
     /// Gets the list of text locations that translate the range chosen to the original file.
     /// </summary>
     /// <value></value>
-    public readonly TextLocation GetOriginalRanges(Range range)
+    public readonly TextLocation GetOriginalLocation(Range range)
     {
         var (start, length) = range.GetOffsetAndLength(Processed.Length);
         var end = start + length;
         var outputStart = -1;
-        foreach (var link in Links)
+        foreach (var link in Links.Span)
         {
             var (linkStart, linkLength) = link.Processed.GetOffsetAndLength(Processed.Length);
             var linkEnd = linkStart + linkLength;
