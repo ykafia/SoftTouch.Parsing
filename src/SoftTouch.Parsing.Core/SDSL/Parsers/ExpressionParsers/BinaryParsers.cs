@@ -12,7 +12,10 @@ public struct ExpressionParser : IParser<Expression>
         else
         {
             if (orError is not null)
+            {
                 result.Errors.Add(orError.Value);
+                scanner.Position = scanner.End;
+            }
             return false;
         }
     }

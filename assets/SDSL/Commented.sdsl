@@ -6,7 +6,7 @@ namespace MyNamespace.SoftTouch.Hello
         stream int a;
     }
 
-    shader MyShader : Parent
+    shader MyShader
     {
         void MyMethod()
         {

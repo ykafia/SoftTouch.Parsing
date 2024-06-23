@@ -69,33 +69,29 @@ public record struct CharTerminalParser(char Character) : ITerminal
 
 public struct DigitRange
 {
-    public static DigitRange All { get; } = new("[0-9]");
-    public static DigitRange ExceptZero { get; } = new("[1-9]");
-    public static DigitRange OnlyZero { get; } = new("0");
+    static string allChars = "0123456789";
+    public static DigitRange All { get; } = new(0..9);
+    public static DigitRange ExceptZero { get; } = new(1..9);
+    public static DigitRange OnlyZero { get; } = new(0);
     public string Chars { get; set; }
-    public DigitRange(string numbers)
+    public DigitRange(Range range)
     {
-        if (numbers.Length == 1 && char.IsDigit(numbers[0]))
-            Chars = numbers;
-        else if (numbers.StartsWith('[') && numbers[2] == '-' && numbers.Length == 5)
-        {
-            int start = numbers[1] - '0';
-            int end = numbers[3] - '0';
-            var size = end - start;
-            Span<char> span = stackalloc char[size];
-            for (int i = start; i <= end; i++)
-                span[i - start] = (char)(i + '0');
-            Chars = span.ToString();
-        }
-        else
-        {
-            foreach(var d in numbers)
-                if(!char.IsDigit(d))
-                    throw new ArgumentException($"Cannot parse '{numbers}', it should be formatted as '[<start>-<end>]' or just a list of all digit characters needed");
-            Chars = numbers.ToString();
-        }
+        Chars = allChars[range];
+    }
+    public DigitRange(int digit)
+    {
+        Chars = $"{(char)(digit + '0')}";
+    }
+    public DigitRange(string chars)
+    {
+        foreach(var e in chars)
+            if(!char.IsDigit(e))
+                throw new ArgumentException($"Cannot use {chars} as a list of digit");
+        Chars = chars;
     }
 
+    public static implicit operator DigitRange(Range range) => new(range);
+    public static implicit operator DigitRange(int number) => new(number);
     public static implicit operator DigitRange(string numbers) => new(numbers);
 }
 

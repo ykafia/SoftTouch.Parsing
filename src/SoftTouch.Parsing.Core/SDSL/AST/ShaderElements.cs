@@ -3,11 +3,16 @@ namespace SoftTouch.Parsing.SDSL.AST;
 
 public abstract class ShaderElement(TextLocation info) : Node(info);
 
-public sealed class CBuffer(TextLocation info) : ShaderElement(info)
+public abstract class ShaderBuffer(Identifier name, TextLocation info) : ShaderElement(info)
+{
+    public Identifier Name { get; set; } = name;
+}
+
+public sealed class CBuffer(Identifier name, TextLocation info) : ShaderBuffer(name, info)
 {
     public List<ShaderMember> Members { get; set; } = [];
 }
-public sealed class TBuffer(TextLocation info) : ShaderElement(info)
+public sealed class TBuffer(Identifier name, TextLocation info) : ShaderBuffer(name, info)
 {
     public List<ShaderMember> Members { get; set; } = [];
 }
@@ -18,10 +23,11 @@ public abstract class MethodOrMember(TextLocation info, bool isStaged = false) :
 }
 
 
-public sealed class ShaderMember(Identifier type, Identifier name, bool isStream, Expression? initialValue, TextLocation location, bool isStaged = false) : MethodOrMember(location, isStaged)
+public sealed class ShaderMember(Identifier type, Identifier name, Expression? initialValue, TextLocation location, bool isStaged = false, bool isStream = false, Identifier? semantic = null) : MethodOrMember(location, isStaged)
 {
     public Identifier Type { get; set; } = type;
     public Identifier Name { get; set; } = name;
+    public Identifier? Semantic { get; set; } = semantic;
     public bool IsStream { get; set;} = isStream;
     public Expression? Value { get; set; } = initialValue;
 

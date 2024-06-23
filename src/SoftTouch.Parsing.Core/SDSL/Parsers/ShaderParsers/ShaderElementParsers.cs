@@ -8,7 +8,17 @@ public record struct ShaderElementParsers : IParser<ShaderElement>
     public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out ShaderElement parsed, in ParseError? orError = null)
         where TScanner : struct, IScanner
     {
-        if(Method(ref scanner, result, out parsed))
+        if(BufferParsers.Buffer(ref scanner, result, out var buffer, orError))
+        {
+            parsed = buffer;
+            return true;
+        }
+        else if(ShaderMemberParser.Member(ref scanner, result, out var member, orError))
+        {
+            parsed = member;
+            return true;
+        }
+        else if(Method(ref scanner, result, out parsed))
             return true;
         else return false;
     }

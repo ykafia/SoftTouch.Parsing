@@ -35,7 +35,7 @@ public struct IntegerParser : IParser<IntegerLiteral>
     {
         var position = scanner.Position;
         IntegerSuffixParser suffix = new();
-        if (Terminals.Digit(ref scanner, DigitMode.ExceptZero, advance: true))
+        if (Terminals.Digit(ref scanner, 1.., advance: true))
         {
             while (Terminals.Digit(ref scanner, advance: true)) ;
 
@@ -52,7 +52,7 @@ public struct IntegerParser : IParser<IntegerLiteral>
                 return true;
             }
         }
-        else if (Terminals.Char('0', ref scanner, advance: true) && !Terminals.Digit(ref scanner, DigitMode.All))
+        else if (Terminals.Char('0', ref scanner, advance: true) && !Terminals.Digit(ref scanner, ..))
         {
             node = new(new(32, false, true), 0, new(scanner.Memory, position..scanner.Position));
             return true;
@@ -85,7 +85,7 @@ public struct FloatParser : IParser<FloatLiteral>
                 node = new FloatLiteral(s, double.Parse(scanner.Span[position..scanner.Position]), new(scanner.Memory, position..scanner.Position));
             return true;
         }
-        else if (Terminals.Digit(ref scanner, DigitMode.ExceptZero, advance: true))
+        else if (Terminals.Digit(ref scanner, 1.., advance: true))
         {
             while (Terminals.Digit(ref scanner, advance: true)) ;
             Suffix s = new(32, true, true);
@@ -108,7 +108,7 @@ public struct FloatParser : IParser<FloatLiteral>
 
             return true;
         }
-        else if (Terminals.Digit(ref scanner, DigitMode.OnlyZero))
+        else if (Terminals.Digit(ref scanner, 0))
         {
             scanner.Advance(1);
             Suffix s = new(32, true, true);
