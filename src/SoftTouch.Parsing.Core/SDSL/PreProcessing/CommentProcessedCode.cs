@@ -7,9 +7,9 @@ namespace SoftTouch.Parsing.SDSL.PreProcessing;
 /// </summary>
 public struct CommentProcessedCode : IScannableCode
 {
-    public ReadOnlyMemory<char> Original { get; set; }
-    public MemoryOwner<char> Processed { get; set; } = MemoryOwner<char>.Empty;
-    public MemoryOwner<TextLink> Links { get; } = MemoryOwner<TextLink>.Empty;
+    public ReadOnlyMemory<char> Original { get; init; }
+    public MemoryOwner<char> Processed { get; private set; } = MemoryOwner<char>.Empty;
+    public MemoryOwner<TextLink> Links { get; private set; } = MemoryOwner<TextLink>.Empty;
 
     public readonly ReadOnlySpan<char> Span => Memory.Span;
 
@@ -63,7 +63,7 @@ public struct CommentProcessedCode : IScannableCode
     {
         (_, var length) = range.GetOffsetAndLength(Original.Length);
         Processed = Processed.Add(Original.Span[range]);
-        Links.Add([new(range, (Processed.Length - length)..Processed.Length)]);
+        Links = Links.Add([new(range, (Processed.Length - length)..Processed.Length)]);
 
     }
     internal void Add(Span<char> span)

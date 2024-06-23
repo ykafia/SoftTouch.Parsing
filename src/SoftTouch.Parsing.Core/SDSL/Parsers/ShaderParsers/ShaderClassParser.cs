@@ -45,10 +45,12 @@ public record struct SimpleShaderClassParser : IParser<ShaderClass>
             var c = new ShaderClass(className, scanner.GetLocation(position, scanner.Position - position));
             while(!scanner.IsEof && !Terminals.Char('}', ref scanner, advance: true) )
             {
-                if(ShaderElementParsers.ShaderElement(ref scanner, result, out var e))
+                if (ShaderElementParsers.ShaderElement(ref scanner, result, out var e))
                 {
                     c.Elements.Add(e);
                 }
+                else
+                    break;
                 CommonParsers.Spaces0(ref scanner, result, out _);
             }
             parsed = c;

@@ -108,7 +108,12 @@ public struct Scanner(string code) : IScanner
     }
     public readonly ErrorLocation CreateError(int position)
     {
-        throw new NotImplementedException();
+        return new ErrorLocation(this, position);
+    }
+
+    public readonly TextLocation GetLocation(Range range)
+    {
+        return new(Memory, range);
     }
 }
 

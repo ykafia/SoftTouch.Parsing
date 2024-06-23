@@ -12,10 +12,42 @@ public static class CommonParsers
        where TScanner : struct, IScanner
         => new Space1(onlyWhiteSpace).Match(ref scanner, result, out node, in orError);
 
+
+    public static bool Optional<TScanner, TTerminal>(ref TScanner scanner, TTerminal terminal, bool advance = false)
+        where TScanner : struct, IScanner
+        where TTerminal : struct, ITerminal
+    {
+        terminal.Match(ref scanner, advance: advance);
+        return true;
+    }
+    public static bool Optional<TScanner, TNode>(ref TScanner scanner, IParser<TNode> parser, ParseResult result, out TNode? node)
+        where TScanner : struct, IScanner
+        where TNode : Node
+    {
+        parser.Match(ref scanner, result, out node);
+        return true;
+    }
+
+    public static bool FollowedBy<TScanner, TTerminal>(ref TScanner scanner, TTerminal terminal, bool withSpaces = false)
+        where TScanner : struct, IScanner
+        where TTerminal : struct, ITerminal
+    {
+        var position = scanner.Position;
+        if (withSpaces)
+            Spaces0(ref scanner, null!, out _);
+        if (terminal.Match(ref scanner, advance: false))
+        {
+            scanner.Position = position;
+            return true;
+        }
+        scanner.Position = position;
+        return false;
+    }
+
     public static bool Until<TScanner>(ref TScanner scanner, char value, bool advance = false)
         where TScanner : struct, IScanner
     {
-        while(!scanner.IsEof && !Terminals.Char(value, ref scanner, advance))
+        while (!scanner.IsEof && !Terminals.Char(value, ref scanner, advance))
             scanner.Advance(1);
         return scanner.IsEof;
     }

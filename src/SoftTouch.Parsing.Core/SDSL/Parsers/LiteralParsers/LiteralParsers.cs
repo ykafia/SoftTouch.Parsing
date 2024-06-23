@@ -47,6 +47,15 @@ public record struct LiteralsParser : IParser<Literal>
             result.Errors.Add(orError.Value);
         return false;
     }
+    public static bool TypeName<TScanner>(ref TScanner scanner, ParseResult result, out TypeName typeName, in ParseError? orError = null)
+        where TScanner : struct, IScanner
+    {
+        if(new TypeNameParser().Match(ref scanner, result, out typeName))
+            return true;
+        else if(orError != null)
+            result.Errors.Add(orError.Value);
+        return false;
+    }
     public static bool Number<TScanner>(ref TScanner scanner, ParseResult result, out NumberLiteral number, in ParseError? orError = null)
         where TScanner : struct, IScanner 
         => new NumberParser().Match(ref scanner, result, out number, in orError);
@@ -235,6 +244,38 @@ public record struct IdentifierParser() : ILiteralParser<Identifier>
                 scanner.Advance(1);
             literal = new(scanner.Memory[position..scanner.Position].ToString(), scanner.GetLocation(position, scanner.Position - position));
             return true;
+        }
+        else return false;
+    }
+}
+
+public record struct TypeNameParser() : ILiteralParser<TypeName>
+{
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out TypeName name)
+        where TScanner : struct, IScanner
+    {
+        name = null!;
+        var position = scanner.Position;
+        if(LiteralsParser.Identifier(ref scanner, result, out var identifier))
+        {
+            var intermediate = scanner.Position;
+            if(
+                CommonParsers.Spaces0(ref scanner, result, out _) 
+                && Terminals.Char('[', ref scanner, advance: true)
+                && CommonParsers.Spaces0(ref scanner, result, out _)
+                && CommonParsers.Optional(ref scanner, new ExpressionParser(), result, out _)
+                && CommonParsers.Spaces0(ref scanner, result, out _)
+                && Terminals.Char(']', ref scanner, advance: true)
+            )
+            {
+                name = new TypeName(scanner.Memory[position..scanner.Position].ToString().Trim(), scanner.GetLocation(position..scanner.Position));
+                return true;
+            }
+            else {
+                scanner.Position = intermediate;
+                name = new(identifier.Name, scanner.GetLocation(position..scanner.Position));
+                return true;
+            }
         }
         else return false;
     }
