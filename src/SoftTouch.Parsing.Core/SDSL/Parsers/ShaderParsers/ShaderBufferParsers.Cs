@@ -8,12 +8,12 @@ public record struct BufferParsers : IParser<ShaderBuffer>
     public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out ShaderBuffer parsed, in ParseError? orError = null) where TScanner : struct, IScanner
     {
         parsed = null!;
-        if(CBuffer(ref scanner, result, out var cbuff, orError))
+        if (CBuffer(ref scanner, result, out var cbuff, orError))
         {
             parsed = cbuff;
             return true;
         }
-        else if(TBuffer(ref scanner, result, out var tbuff, orError))
+        else if (TBuffer(ref scanner, result, out var tbuff, orError))
         {
             parsed = tbuff;
             return true;
@@ -28,7 +28,7 @@ public record struct BufferParsers : IParser<ShaderBuffer>
     public static bool TBuffer<TScanner>(ref TScanner scanner, ParseResult result, out TBuffer parsed, in ParseError? orError = null)
         where TScanner : struct, IScanner
         => new TBufferParser().Match(ref scanner, result, out parsed, orError);
-    
+
     public static bool CBuffer<TScanner>(ref TScanner scanner, ParseResult result, out CBuffer parsed, in ParseError? orError = null)
         where TScanner : struct, IScanner
         => new CBufferParser().Match(ref scanner, result, out parsed, orError);
@@ -43,7 +43,6 @@ public record struct CBufferParser : IParser<CBuffer>
 {
     public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out CBuffer parsed, in ParseError? orError = null) where TScanner : struct, IScanner
     {
-        parsed = null!;
         var position = scanner.Position;
         if (Terminals.Literal("cbuffer ", ref scanner, advance: true))
         {
@@ -52,7 +51,7 @@ public record struct CBufferParser : IParser<CBuffer>
                 && CommonParsers.Spaces0(ref scanner, result, out _)
             )
             {
-                if(Terminals.Char('{', ref scanner))
+                if (Terminals.Char('{', ref scanner))
                 {
                     List<ShaderMember> members = [];
                     CommonParsers.Spaces0(ref scanner, result, out _);
@@ -62,7 +61,7 @@ public record struct CBufferParser : IParser<CBuffer>
                             members.Add(member);
                     }
                     while (!(Terminals.Letter(ref scanner) || Terminals.Char('_', ref scanner)));
-                    if(Terminals.Char('}', ref scanner, advance: true))
+                    if (Terminals.Char('}', ref scanner, advance: true))
                     {
                         parsed = new(identifier, scanner.GetLocation(position..scanner.Position))
                         {
@@ -71,26 +70,17 @@ public record struct CBufferParser : IParser<CBuffer>
                         return true;
                     }
                 }
-                else 
-                {
-                    if (orError is not null)
-                        result.Errors.Add(orError.Value);
-                    result.Errors.Add(new("Expected start of body here", scanner.CreateError(scanner.Position)));
-                    scanner.Position = scanner.End;
-                    return false;
-                }
+                else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
             }
-            else return false;
         }
-        return false;
-        
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
+
     }
 }
 public record struct TBufferParser : IParser<TBuffer>
 {
     public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out TBuffer parsed, in ParseError? orError = null) where TScanner : struct, IScanner
     {
-        parsed = null!;
         var position = scanner.Position;
         if (Terminals.Literal("tbuffer ", ref scanner, advance: true))
         {
@@ -99,7 +89,7 @@ public record struct TBufferParser : IParser<TBuffer>
                 && CommonParsers.Spaces0(ref scanner, result, out _)
             )
             {
-                if(Terminals.Char('{', ref scanner))
+                if (Terminals.Char('{', ref scanner))
                 {
                     List<ShaderMember> members = [];
                     CommonParsers.Spaces0(ref scanner, result, out _);
@@ -109,7 +99,7 @@ public record struct TBufferParser : IParser<TBuffer>
                             members.Add(member);
                     }
                     while (!(Terminals.Letter(ref scanner) || Terminals.Char('_', ref scanner)));
-                    if(Terminals.Char('}', ref scanner, advance: true))
+                    if (Terminals.Char('}', ref scanner, advance: true))
                     {
                         parsed = new(identifier, scanner.GetLocation(position..scanner.Position))
                         {
@@ -118,19 +108,11 @@ public record struct TBufferParser : IParser<TBuffer>
                         return true;
                     }
                 }
-                else 
-                {
-                    if (orError is not null)
-                        result.Errors.Add(orError.Value);
-                    result.Errors.Add(new("Expected start of body here", scanner.CreateError(scanner.Position)));
-                    scanner.Position = scanner.End;
-                    return false;
-                }
+                else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
             }
-            else return false;
         }
-        return false;
-        
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError); ;
+
     }
 }
 
@@ -138,14 +120,13 @@ public record struct BufferMemberParser : IParser<ShaderMember>
 {
     public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out ShaderMember parsed, in ParseError? orError = null) where TScanner : struct, IScanner
     {
-        parsed = null!;
         var position = scanner.Position;
         var isStage = false;
         var isStream = false;
         if (Terminals.Literal("stage ", ref scanner, advance: true))
             isStage = true;
         CommonParsers.Spaces0(ref scanner, result, out _);
-        if (LiteralsParser.Identifier(ref scanner, result, out Identifier typename)
+        if (LiteralsParser.TypeName(ref scanner, result, out var typename)
             && CommonParsers.Spaces1(ref scanner, result, out _)
             && LiteralsParser.Identifier(ref scanner, result, out Identifier name)
             && CommonParsers.FollowedBy(ref scanner, Terminals.Set("=;"), withSpaces: true)
@@ -168,18 +149,10 @@ public record struct BufferMemberParser : IParser<ShaderMember>
                         parsed = new ShaderMember(typename, name, expression, scanner.GetLocation(position..scanner.Position), isStage, isStream);
                         return true;
                     }
-                    else 
-                    {
-                        if(orError is not null)
-                            result.Errors.Add(orError.Value);
-                        result.Errors.Add(new ("Missing semi colon here", scanner.CreateError(scanner.Position)));
-                        scanner.Position = scanner.End;
-                        return false;
-                    }
+                    else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
                 }
-                else return false;
             }
         }
-        return false;
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }

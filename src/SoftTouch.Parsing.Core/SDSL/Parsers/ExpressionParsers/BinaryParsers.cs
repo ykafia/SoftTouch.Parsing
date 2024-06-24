@@ -88,13 +88,7 @@ public record struct TernaryParser : IParser<Expression>
                 return true;
             }
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            return false;
-        }
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -105,7 +99,6 @@ public record struct OrParser() : IParser<Expression>
     {
         var position = scanner.Position;
         var ws0 = new Space0();
-        parsed = null!;
         ws0.Match(ref scanner, result, out _);
         if (ExpressionParser.And(ref scanner, result, out var left))
         {
@@ -125,11 +118,6 @@ public record struct OrParser() : IParser<Expression>
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else
-                {
-                    scanner.Position = position;
-                    return false;
-                }
 
             }
             else
@@ -138,13 +126,7 @@ public record struct OrParser() : IParser<Expression>
                 return true;
             }
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            return false;
-        }
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -175,11 +157,6 @@ public record struct AndParser() : IParser<Expression>
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else
-                {
-                    scanner.Position = position;
-                    return false;
-                }
 
             }
             else
@@ -188,17 +165,9 @@ public record struct AndParser() : IParser<Expression>
                 return true;
             }
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            return false;
-        }
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
-
-
 
 public record struct BitwiseOrParser() : IParser<Expression>
 {
@@ -207,7 +176,6 @@ public record struct BitwiseOrParser() : IParser<Expression>
     {
         var position = scanner.Position;
         var ws0 = new Space0();
-        parsed = null!;
         ws0.Match(ref scanner, result, out _);
         if (ExpressionParser.XOr(ref scanner, result, out var left))
         {
@@ -227,11 +195,6 @@ public record struct BitwiseOrParser() : IParser<Expression>
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else
-                {
-                    scanner.Position = position;
-                    return false;
-                }
 
             }
             else
@@ -240,13 +203,7 @@ public record struct BitwiseOrParser() : IParser<Expression>
                 return true;
             }
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            return false;
-        }
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 public record struct BitwiseXOrParser() : IParser<Expression>
@@ -256,7 +213,6 @@ public record struct BitwiseXOrParser() : IParser<Expression>
     {
         var position = scanner.Position;
         var ws0 = new Space0();
-        parsed = null!;
         ws0.Match(ref scanner, result, out _);
         if (ExpressionParser.BAnd(ref scanner, result, out var left))
         {
@@ -276,11 +232,6 @@ public record struct BitwiseXOrParser() : IParser<Expression>
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else
-                {
-                    scanner.Position = position;
-                    return false;
-                }
 
             }
             else
@@ -289,13 +240,7 @@ public record struct BitwiseXOrParser() : IParser<Expression>
                 return true;
             }
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            return false;
-        }
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 public record struct BitwiseAndParser() : IParser<Expression>
@@ -305,7 +250,6 @@ public record struct BitwiseAndParser() : IParser<Expression>
     {
         var position = scanner.Position;
         var ws0 = new Space0();
-        parsed = null!;
         ws0.Match(ref scanner, result, out _);
         if (ExpressionParser.Equality(ref scanner, result, out var left))
         {
@@ -325,11 +269,6 @@ public record struct BitwiseAndParser() : IParser<Expression>
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else
-                {
-                    scanner.Position = position;
-                    return false;
-                }
 
             }
             else
@@ -338,13 +277,7 @@ public record struct BitwiseAndParser() : IParser<Expression>
                 return true;
             }
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            return false;
-        }
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -357,7 +290,6 @@ public record struct EqualityParser() : IParser<Expression>
     {
         var position = scanner.Position;
         var ws0 = new Space0();
-        parsed = null!;
         ws0.Match(ref scanner, result, out _);
         if (ExpressionParser.Relation(ref scanner, result, out var left))
         {
@@ -377,11 +309,6 @@ public record struct EqualityParser() : IParser<Expression>
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else
-                {
-                    scanner.Position = position;
-                    return false;
-                }
 
             }
             else
@@ -390,13 +317,7 @@ public record struct EqualityParser() : IParser<Expression>
                 return true;
             }
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            return false;
-        }
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -407,7 +328,6 @@ public record struct RelationalParser() : IParser<Expression>
     {
         var position = scanner.Position;
         var ws0 = new Space0();
-        parsed = null!;
         ws0.Match(ref scanner, result, out _);
         if (ExpressionParser.Shift(ref scanner, result, out var left))
         {
@@ -429,11 +349,6 @@ public record struct RelationalParser() : IParser<Expression>
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else
-                {
-                    scanner.Position = position;
-                    return false;
-                }
 
             }
             else if (Terminals.Literal(">=", ref scanner) || Terminals.Literal("<=", ref scanner))
@@ -451,11 +366,6 @@ public record struct RelationalParser() : IParser<Expression>
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else
-                {
-                    scanner.Position = position;
-                    return false;
-                }
 
             }
             else
@@ -464,13 +374,7 @@ public record struct RelationalParser() : IParser<Expression>
                 return true;
             }
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            return false;
-        }
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -481,7 +385,6 @@ public record struct BitwiseShiftParser() : IParser<Expression>
     {
         var position = scanner.Position;
         var ws0 = new Space0();
-        parsed = null!;
         ws0.Match(ref scanner, result, out _);
         if (ExpressionParser.Add(ref scanner, result, out var left))
         {
@@ -501,12 +404,6 @@ public record struct BitwiseShiftParser() : IParser<Expression>
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else
-                {
-                    scanner.Position = position;
-                    return false;
-                }
-
             }
             else
             {
@@ -514,13 +411,7 @@ public record struct BitwiseShiftParser() : IParser<Expression>
                 return true;
             }
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            return false;
-        }
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -531,7 +422,6 @@ public record struct AdditionParser() : IParser<Expression>
     {
         var position = scanner.Position;
         var ws0 = new Space0();
-        parsed = null!;
         ws0.Match(ref scanner, result, out _);
         if (ExpressionParser.Mul(ref scanner, result, out var left))
         {
@@ -551,12 +441,6 @@ public record struct AdditionParser() : IParser<Expression>
                     parsed = new BinaryExpression(left, op, mul, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else
-                {
-                    scanner.Position = position;
-                    return false;
-                }
-
             }
             else
             {
@@ -564,13 +448,7 @@ public record struct AdditionParser() : IParser<Expression>
                 return true;
             }
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            return false;
-        }
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -601,8 +479,6 @@ public record struct MultiplicationParser() : IParser<Expression>
                     parsed = new BinaryExpression(left, op, right, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                scanner.Position = position;
-                return false;
             }
             else
             {
@@ -610,12 +486,6 @@ public record struct MultiplicationParser() : IParser<Expression>
                 return true;
             }
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            return false;
-        }
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }

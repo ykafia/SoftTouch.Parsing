@@ -5,6 +5,22 @@ namespace SoftTouch.Parsing.SDSL;
 
 public static class CommonParsers
 {
+    public static bool Exit<TScanner, TNode>(ref TScanner scanner, ParseResult result, out TNode parsed, int beginningPosition, in ParseError? orError = null)
+        where TScanner : struct, IScanner
+        where TNode : Node
+    {
+        if (orError is not null)
+        {
+            result.Errors.Add(orError.Value);
+            scanner.Position = scanner.End;
+            parsed = null!;
+            return false;
+        }
+        scanner.Position = beginningPosition;
+        parsed = null!;
+        return false;
+    }
+
     public static bool Spaces0<TScanner>(ref TScanner scanner, ParseResult result, out NoNode node, in ParseError? orError = null, bool onlyWhiteSpace = false)
         where TScanner : struct, IScanner
         => new Space0(onlyWhiteSpace).Match(ref scanner, result, out node, in orError);

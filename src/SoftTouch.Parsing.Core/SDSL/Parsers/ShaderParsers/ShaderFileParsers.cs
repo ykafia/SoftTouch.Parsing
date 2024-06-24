@@ -81,26 +81,16 @@ public record struct NamespaceParsers : IParser<ShaderNamespace>
                     if(ShaderClassParsers.Class(ref scanner, result, out var shader) && CommonParsers.Spaces0(ref scanner, result, out _))
                         ns.ShaderClasses.Add(shader);
                     else 
-                    {
-                        result.Errors.Add(new("Expected shader class", scanner.CreateError(scanner.Position)));
-                        scanner.Position = scanner.Span.Length;
-                        parsed = null!;
-                        return false;
-                    }
+                        return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected shader class", scanner.CreateError(scanner.Position)));
                 }
             }
-            else
-            {
-                scanner.Position = position;
-                parsed = null!;
-                return false;
-            }
+            else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
+
             ns.Info = scanner.GetLocation(position, scanner.Position - position);
             parsed = ns;
             return true;
         }
-        parsed = null!;
-        return false;
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 
     public static bool Namespace<TScanner>(ref TScanner scanner, ParseResult result, out ShaderNamespace parsed, in ParseError? orError = null)

@@ -10,7 +10,7 @@ public record struct ShaderMemberParser : IParser<ShaderMember>
     public static bool Member<TScanner>(ref TScanner scanner, ParseResult result, out ShaderMember parsed, in ParseError? orError = null)
         where TScanner : struct, IScanner
         => new ShaderMemberParser().Match(ref scanner, result, out parsed, in orError);
-    
+
     public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out ShaderMember parsed, in ParseError? orError = null) where TScanner : struct, IScanner
     {
         parsed = null!;
@@ -23,7 +23,7 @@ public record struct ShaderMemberParser : IParser<ShaderMember>
         if (Terminals.Literal("stream ", ref scanner, advance: true))
             isStream = true;
         CommonParsers.Spaces0(ref scanner, result, out _);
-        if (LiteralsParser.Identifier(ref scanner, result, out Identifier typename)
+        if (LiteralsParser.TypeName(ref scanner, result, out var typename)
             && CommonParsers.Spaces1(ref scanner, result, out _)
             && LiteralsParser.Identifier(ref scanner, result, out Identifier name)
             && CommonParsers.FollowedBy(ref scanner, Terminals.Set("=;"), withSpaces: true)
@@ -61,16 +61,14 @@ public record struct ShaderMemberParser : IParser<ShaderMember>
                                 return false;
                             }
                         }
-                        else
-                            return false;
+                        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
                     }
                     parsed = new ShaderMember(typename, name, expression, scanner.GetLocation(position..scanner.Position), isStage, isStream);
                     return true;
                 }
-                else return false;
             }
         }
-        return false;
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 

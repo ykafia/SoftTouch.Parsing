@@ -8,6 +8,7 @@ public struct NumberParser : IParser<NumberLiteral>
     public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out NumberLiteral parsed, in ParseError? orError = null)
         where TScanner : struct, IScanner
     {
+        var position = scanner.Position;
         var fp = new FloatParser();
         var ip = new IntegerParser();
 
@@ -21,10 +22,7 @@ public struct NumberParser : IParser<NumberLiteral>
             parsed = pi;
             return true;
         }
-        if (orError is not null)
-            result.Errors.Add(orError.Value);
-        parsed = null!;
-        return false;
+        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -57,14 +55,7 @@ public struct IntegerParser : IParser<IntegerLiteral>
             node = new(new(32, false, true), 0, new(scanner.Memory, position..scanner.Position));
             return true;
         }
-        else
-        {
-            node = null!;
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            return false;
-        }
+        else return CommonParsers.Exit(ref scanner, result, out node, position, orError);
     }
 }
 
@@ -95,8 +86,7 @@ public struct FloatParser : IParser<FloatLiteral>
             }
             else if (!suffix.Match(ref scanner, result, out s))
             {
-                scanner.Position = position;
-                return false;
+                return CommonParsers.Exit(ref scanner, result, out node, position, orError);
             }
             var len = 0;
             foreach (var e in scanner.Span[position..scanner.Position])
@@ -121,13 +111,7 @@ public struct FloatParser : IParser<FloatLiteral>
             node = new FloatLiteral(s, double.Parse(scanner.Span[position..scanner.Position]), new(scanner.Memory, position..scanner.Position));
             return true;
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            return false;
-        }
+        else return CommonParsers.Exit(ref scanner, result, out node, position, orError);
     }
 }
 public struct HexParser : IParser<HexLiteral>
@@ -156,12 +140,7 @@ public struct HexParser : IParser<HexLiteral>
             node = new HexLiteral(sum, scanner.GetLocation(position, scanner.Position - position));
             return true;
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            return false;
-        }
+        else return CommonParsers.Exit(ref scanner, result, out node, position, orError);
     }
 
     static int Hex2int(char ch)

@@ -56,12 +56,7 @@ public record struct SimpleShaderClassParser : IParser<ShaderClass>
             parsed = c;
             return true;
         }
-        else
-        {
-            parsed = null!;
-            scanner.Position = position;
-            return false;
-        }
+        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -88,39 +83,22 @@ public record struct ShaderClassParser : IParser<ShaderClass>
                     if(ShaderClassParsers.GenericsDefinition(ref scanner, result, out var gen))
                         c.Generics.Add(gen);
                     else 
-                    {
-                        result.Errors.Add(new("Expected generics definition", scanner.CreateError(scanner.Position)));
-                        scanner.Position = scanner.Span.Length;
-                        parsed = null!;
-                        return false;
-                    }
+                        return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected generics definition", scanner.CreateError(scanner.Position)));
                 }
             }
 
             while (!scanner.IsEof && !Terminals.Char('}', ref scanner, advance: true))
             {
                 if (ShaderElementParsers.ShaderElement(ref scanner, result, out var e))
-                {
                     c.Elements.Add(e);
-                }
                 else 
-                {
-                    result.Errors.Add(new("Expected shader element", scanner.CreateError(scanner.Position)));
-                    scanner.Position = scanner.Span.Length;
-                    parsed = null!;
-                    return false;
-                }
+                    return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected shader element", scanner.CreateError(scanner.Position)));
                 CommonParsers.Spaces0(ref scanner, result, out _);
             }
             parsed = c;
             return true;
         }
-        else
-        {
-            parsed = null!;
-            scanner.Position = position;
-            return false;
-        }
+        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -141,11 +119,6 @@ public record struct ShaderGenericsDefinitionParser : IParser<ShaderGenerics>
             parsed = new ShaderGenerics(typename,identifier, scanner.GetLocation(position, scanner.Position - position));
             return true;
         }
-        else 
-        {
-            scanner.Position = position;
-            parsed = null!;
-            return false;
-        }
+        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }

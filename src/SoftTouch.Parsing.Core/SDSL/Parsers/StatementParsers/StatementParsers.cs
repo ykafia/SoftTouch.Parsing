@@ -21,30 +21,30 @@ public record struct StatementParsers : IParser<Statement>
         else if (Block(ref scanner, result, out parsed))
             return true;
         if (orError is not null)
-                result.Errors.Add(orError.Value);
+            result.Errors.Add(orError.Value);
         return false;
     }
-    internal static bool Statement<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed)
+    internal static bool Statement<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
         where TScanner : struct, IScanner
-        => new StatementParsers().Match(ref scanner, result, out parsed);
-    internal static bool Block<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed)
+        => new StatementParsers().Match(ref scanner, result, out parsed, orError);
+    internal static bool Block<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
         where TScanner : struct, IScanner
-        => new BlockStatementParser().Match(ref scanner, result, out parsed);
-    internal static bool Break<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed)
+        => new BlockStatementParser().Match(ref scanner, result, out parsed, orError);
+    internal static bool Break<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
         where TScanner : struct, IScanner
-        => new BreakParser().Match(ref scanner, result, out parsed);
-    internal static bool Continue<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed)
+        => new BreakParser().Match(ref scanner, result, out parsed, orError);
+    internal static bool Continue<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
         where TScanner : struct, IScanner
-    => new ContinueParser().Match(ref scanner, result, out parsed);
-    internal static bool Expression<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed)
+    => new ContinueParser().Match(ref scanner, result, out parsed, orError);
+    internal static bool Expression<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
         where TScanner : struct, IScanner
-        => new ExpressionStatementParser().Match(ref scanner, result, out parsed);
-    internal static bool Declare<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed)
+        => new ExpressionStatementParser().Match(ref scanner, result, out parsed, orError);
+    internal static bool Declare<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
         where TScanner : struct, IScanner
-        => new DeclareStatementParser().Match(ref scanner, result, out parsed);
-    internal static bool DeclareAssign<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed)
+        => new DeclareStatementParser().Match(ref scanner, result, out parsed, orError);
+    internal static bool DeclareAssign<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
         where TScanner : struct, IScanner
-        => new DeclareAssignStatementParser().Match(ref scanner, result, out parsed);
+        => new DeclareAssignStatementParser().Match(ref scanner, result, out parsed, orError);
 }
 
 
@@ -73,22 +73,11 @@ public record struct ReturnStatementParser : IParser<Statement>
                 parsed = new Return(scanner.GetLocation(position, scanner.Position - position), val);
                 return true;
             }
-            else
-            {
-                result.Errors.Add(new("Expected value or \";\"", scanner.CreateError(scanner.Position)));
-                parsed = null!;
-                return false;
-            }
+            else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected value or \";\"", scanner.CreateError(scanner.Position)));
+
 
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            parsed = null!;
-            return false;
-        }
+        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -107,14 +96,7 @@ public record struct BreakParser : IParser<Statement>
             parsed = new Break(scanner.GetLocation(position, scanner.Position - position));
             return true;
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            parsed = null!;
-            return false;
-        }
+        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 public record struct ContinueParser : IParser<Statement>
@@ -132,14 +114,7 @@ public record struct ContinueParser : IParser<Statement>
             parsed = new Break(scanner.GetLocation(position, scanner.Position - position));
             return true;
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            parsed = null!;
-            return false;
-        }
+        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -158,14 +133,7 @@ public record struct ExpressionStatementParser : IParser<Statement>
             parsed = new ExpressionStatement(expression, scanner.GetLocation(position, scanner.Position - position));
             return true;
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            parsed = null!;
-            return false;
-        }
+        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -187,14 +155,7 @@ public record struct DeclareStatementParser : IParser<Statement>
             parsed = new Declare(typeName, variableName, scanner.GetLocation(position, scanner.Position - position));
             return true;
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            parsed = null!;
-            return false;
-        }
+        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -219,14 +180,7 @@ public record struct DeclareAssignStatementParser : IParser<Statement>
             parsed = new DeclareAssign(typeName, variableName, value, scanner.GetLocation(position, scanner.Position - position));
             return true;
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            parsed = null!;
-            return false;
-        }
+        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -260,14 +214,7 @@ public record struct BlockStatementParser : IParser<Statement>
             parsed = block;
             return true;
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            parsed = null!;
-            return false;
-        }
+        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 

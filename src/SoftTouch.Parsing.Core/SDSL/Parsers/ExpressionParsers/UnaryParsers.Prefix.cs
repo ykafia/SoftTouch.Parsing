@@ -27,9 +27,14 @@ public record struct PrefixParser : IParser<Expression>
         else
         {
             if (orError is not null)
+            {
                 result.Errors.Add(orError.Value);
-            parsed = null!;
+                scanner.Position = scanner.End;
+                parsed = null!;
+                return false;
+            }
             scanner.Position = position;
+            parsed = null!;
             return false;
         }
     }
@@ -49,13 +54,7 @@ public record struct PrefixIncrementParser : IParser<Expression>
                 parsed = new PrefixExpression(Operator.Inc, lit, scanner.GetLocation(position, scanner.Position - position));
                 return true;
             }
-            else
-            {
-                parsed = null!;
-                scanner.Position = position;
-                result.Errors.Add(new("Expecting Postfix expression", scanner.CreateError(position)));
-                return false;
-            }
+            else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expecting Postfix expression", scanner.CreateError(position)));
         }
         // prefix decrememnt 
         else if (Terminals.Literal("--", ref scanner, advance: true))
@@ -66,22 +65,10 @@ public record struct PrefixIncrementParser : IParser<Expression>
                 parsed = new PrefixExpression(Operator.Inc, lit, scanner.GetLocation(position, scanner.Position - position));
                 return true;
             }
-            else
-            {
-                parsed = null!;
-                scanner.Position = position;
-                result.Errors.Add(new("Expecting Postfix expression", scanner.CreateError(position)));
-                return false;
-            }
+            else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expecting Postfix expression", scanner.CreateError(position)));
+   
         }
-        else
-        {
-            if(orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            parsed = null!;
-            return false;
-        }
+        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -102,20 +89,10 @@ public record struct NotExpressionParser : IParser<Expression>
                 parsed = new PrefixExpression(op, lit, scanner.GetLocation(position, scanner.Position - position));
                 return true;
             }
-            else
-            {
-                parsed = null!;
-                scanner.Position = position;
-                result.Errors.Add(new("Expecting Postfix expression", scanner.CreateError(position)));
-                return false;
-            }
+            else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expecting Postfix expression", scanner.CreateError(position)));
+                
         }
-        else 
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value with { Location = scanner.CreateError(position) });
-            return false;
-        }
+        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -136,20 +113,19 @@ public record struct SignExpressionParser : IParser<Expression>
                 parsed = new PrefixExpression(op, lit, scanner.GetLocation(position, scanner.Position - position));
                 return true;
             }
-            else
-            {
-                // TODO: check if error can be added here
-                if (orError is not null)
-                    result.Errors.Add(orError.Value with { Location = scanner.CreateError(position) });
-                parsed = null!;
-                scanner.Position = position;
-                return false;
-            }
+            else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
         }
-        else 
+        else
         {
             if (orError is not null)
-                result.Errors.Add(orError.Value with { Location = scanner.CreateError(position) });
+            {
+                result.Errors.Add(orError.Value);
+                scanner.Position = scanner.End;
+                parsed = null!;
+                return false;
+            }
+            scanner.Position = position;
+            parsed = null!;
             return false;
         }
     }
@@ -173,13 +149,6 @@ public record struct CastExpressionParser : IParser<Expression>
             parsed = new CastExpression(typeName.Name, Operator.Cast, lit, scanner.GetLocation(position, scanner.Position - position));
             return true;
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value with { Location = scanner.CreateError(position) });
-            parsed = null!;
-            scanner.Position = position;
-            return false;
-        }
+        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }

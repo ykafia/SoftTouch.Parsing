@@ -24,11 +24,7 @@ public record struct PostfixParser : IParser<Expression>
                         parsed = new AccessorExpression(parsed, accessed, scanner.GetLocation(position, scanner.Position));
                         return true;
                     }
-                    else
-                    {
-                        scanner.Position = position;
-                        return false;
-                    }
+                    else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
                 }
                 else if (Terminals.Char('[', ref scanner, advance: true))
                 {
@@ -42,11 +38,6 @@ public record struct PostfixParser : IParser<Expression>
                         parsed = new IndexerExpression(parsed, index, scanner.GetLocation(position, scanner.Position - position));
                         return true;
                     }
-                    else
-                    {
-                        scanner.Position = position;
-                        return false;
-                    }
                 }
                 else if (Terminals.Literal("++", ref scanner, advance: true))
                 {
@@ -58,21 +49,12 @@ public record struct PostfixParser : IParser<Expression>
                     parsed = new PostfixExpression(parsed, Operator.Dec, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else 
-                {
-                    result.Errors.Add(new("Expected Postfix expression", scanner.CreateError(position)));
-                    return false;
-                }
+                else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected Postfix expression", scanner.CreateError(position)));
+                    
             }
             else return true;
         }
-        else 
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            scanner.Position = position;
-            return false;
-        }
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
     public static bool Postfix<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
         where TScanner : struct, IScanner
@@ -114,10 +96,7 @@ public record struct PostfixAccessorParser : IParser<Expression>
                 return true;
             }
         }
-        if (orError is not null)
-                result.Errors.Add(orError.Value);
-        parsed = null!;
-        return false;
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -144,12 +123,8 @@ public record struct PostfixIndexerParser : IParser<Expression>
                     parsed = new IndexerExpression(expression, index, scanner.GetLocation(position, scanner.Position - position));
                     return true;
                 }
-                else 
-                {
-                    result.Errors.Add(new("Expected accessor parser", scanner.CreateError(position)));
-                    parsed = null!;
-                    return false;
-                }
+                else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected accessor parser", scanner.CreateError(position)));
+                    
             }
             else
             {
@@ -158,10 +133,7 @@ public record struct PostfixIndexerParser : IParser<Expression>
                 return true;
             }
         }
-        if (orError is not null)
-                result.Errors.Add(orError.Value);
-        parsed = null!;
-        return false;
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -171,11 +143,11 @@ public record struct PostfixIncrementParser : IParser<Expression>
         where TScanner : struct, IScanner
     {
         var position = scanner.Position;
-        if(PostfixParser.Accessor(ref scanner, result, out parsed))
+        if (PostfixParser.Accessor(ref scanner, result, out parsed))
         {
             var pos2 = scanner.Position;
             CommonParsers.Spaces0(ref scanner, result, out _);
-            if(Terminals.Literal("++", ref scanner, advance: true))
+            if (Terminals.Literal("++", ref scanner, advance: true))
             {
                 parsed = new PostfixExpression(parsed, Operator.Inc, scanner.GetLocation(position, scanner.Position - position));
                 return true;
@@ -186,10 +158,7 @@ public record struct PostfixIncrementParser : IParser<Expression>
                 return true;
             }
         }
-        if (orError is not null)
-                result.Errors.Add(orError.Value);
-        parsed = null!;
-        return false;
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
