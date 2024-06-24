@@ -202,13 +202,7 @@ public record struct BlockStatementParser : IParser<Statement>
                     block.Statements.Add(statement);
                     CommonParsers.Spaces0(ref scanner, result, out _);
                 }
-                else
-                {
-                    result.Errors.Add(new("Expected Statement", scanner.CreateError(scanner.Position)));
-                    scanner.Position = scanner.Span.Length;
-                    parsed = null!;
-                    return false;
-                }
+                else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected Statement", scanner.CreateError(scanner.Position)));
             }
             block.Info = scanner.GetLocation(position, scanner.Position - position);
             parsed = block;

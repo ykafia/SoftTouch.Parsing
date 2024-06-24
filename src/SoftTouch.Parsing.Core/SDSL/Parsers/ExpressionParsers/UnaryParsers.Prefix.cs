@@ -24,19 +24,7 @@ public record struct PrefixParser : IParser<Expression>
             parsed = p;
             return true;
         }
-        else
-        {
-            if (orError is not null)
-            {
-                result.Errors.Add(orError.Value);
-                scanner.Position = scanner.End;
-                parsed = null!;
-                return false;
-            }
-            scanner.Position = position;
-            parsed = null!;
-            return false;
-        }
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -101,7 +89,6 @@ public record struct SignExpressionParser : IParser<Expression>
     public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
         where TScanner : struct, IScanner
     {
-        parsed = null!;
         var position = scanner.Position;
         if (Terminals.Set("+-", ref scanner))
         {
@@ -115,19 +102,7 @@ public record struct SignExpressionParser : IParser<Expression>
             }
             else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
         }
-        else
-        {
-            if (orError is not null)
-            {
-                result.Errors.Add(orError.Value);
-                scanner.Position = scanner.End;
-                parsed = null!;
-                return false;
-            }
-            scanner.Position = position;
-            parsed = null!;
-            return false;
-        }
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 

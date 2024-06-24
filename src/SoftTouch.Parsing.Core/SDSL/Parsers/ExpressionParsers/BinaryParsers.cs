@@ -7,17 +7,10 @@ public struct ExpressionParser : IParser<Expression>
     public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
         where TScanner : struct, IScanner
     {
+        var position = scanner.Position;
         if (Ternary(ref scanner, result, out parsed))
             return true;
-        else
-        {
-            if (orError is not null)
-            {
-                result.Errors.Add(orError.Value);
-                scanner.Position = scanner.End;
-            }
-            return false;
-        }
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 
     public static bool Expression<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)

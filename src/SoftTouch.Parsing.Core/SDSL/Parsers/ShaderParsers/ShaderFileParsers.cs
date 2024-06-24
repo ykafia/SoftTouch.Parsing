@@ -55,11 +55,8 @@ public record struct NamespaceParsers : IParser<ShaderNamespace>
             {
                 if (LiteralsParser.Identifier(ref scanner, result, out var identifier))
                     ns.NamespacePath.Add(identifier);
-                else 
-                {
-                    result.Errors.Add(new("Expected identifier", scanner.CreateError(scanner.Position)));
-                    scanner.Position = scanner.Span.Length;
-                }
+                else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected identifier", scanner.CreateError(scanner.Position)));
+                    
                 CommonParsers.Spaces0(ref scanner, result, out _);
             }
             while (!scanner.IsEof && Terminals.Char('.', ref scanner, advance: true));

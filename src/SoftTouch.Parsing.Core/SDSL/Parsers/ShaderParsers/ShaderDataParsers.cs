@@ -52,14 +52,8 @@ public record struct ShaderMemberParser : IParser<ShaderMember>
                                 parsed = new ShaderMember(typename, name, expression, scanner.GetLocation(position..scanner.Position), isStage, isStream, semantic);
                                 return true;
                             }
-                            else
-                            {
-                                if (orError is not null)
-                                    result.Errors.Add(orError.Value);
-                                result.Errors.Add(new("Missing semi colon here", scanner.CreateError(scanner.Position)));
-                                scanner.Position = scanner.End;
-                                return false;
-                            }
+                            else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Missing semi colon here", scanner.CreateError(scanner.Position)));
+                                
                         }
                         else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
                     }
