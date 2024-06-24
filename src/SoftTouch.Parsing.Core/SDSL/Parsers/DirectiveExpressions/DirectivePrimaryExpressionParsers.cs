@@ -77,60 +77,16 @@ public record struct DirectiveMethodCallParser : IParser<Expression>
         )
         {
             CommonParsers.Spaces0(ref scanner, result, out _);
+            ParameterParsers.Values(ref scanner, result, out var parameters);
             var pos2 = scanner.Position;
             if (Terminals.Char(')', ref scanner, advance: true))
             {
-                parsed = new MethodCall(identifier, scanner.GetLocation(position, scanner.Position - position));
+                parsed = new MethodCall(identifier, parameters, scanner.GetLocation(position, scanner.Position - position));
                 return true;
             }
-            else if (ExpressionParser.Expression(ref scanner, result, out var first))
-            {
-                var method = new MethodCall(identifier, scanner.GetLocation(position, scanner.Position - position));
-                method.Parameters.Add(first);
-                CommonParsers.Spaces0(ref scanner, result, out _);
-                while (!scanner.IsEof && Terminals.Char(',', ref scanner, advance: true) && CommonParsers.Spaces0(ref scanner, result, out _))
-                {
-                    if (ExpressionParser.Expression(ref scanner, result, out var param))
-                        method.Parameters.Add(param);
-                    else
-                    {
-                        result.Errors.Add(new("Expected expression value", scanner.CreateError(scanner.Position)));
-                        scanner.Position = scanner.Span.Length;
-                        parsed = null!;
-                        return false;
-                    }
-                    CommonParsers.Spaces0(ref scanner, result, out _);
-                }
-                if (Terminals.Char(')', ref scanner, advance: true))
-                {
-                    parsed = method;
-                    return true;
-                }
-                else
-                {
-                    result.Errors.Add(new("Expected parenthesis for closing method call", scanner.CreateError(position)));
-                    scanner.Position = scanner.Span.Length;
-                    parsed = null!;
-                    return false;
-                }
-            }
-            else
-            {
-
-                scanner.Position = position;
-                result.Errors.Add(new("Expected method call", scanner.CreateError(position)));
-                scanner.Position = scanner.Span.Length;
-                parsed = null!;
-                return false;
-            }
+            else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected closing parenthesis", scanner.CreateError(scanner.Position)));
         }
-        else
-        {
-            if (orError is not null)
-                result.Errors.Add(orError.Value);
-            parsed = null!;
-            scanner.Position = position;
-            return false;
-        }
+        
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }

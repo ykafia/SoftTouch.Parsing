@@ -69,34 +69,14 @@ public record struct MethodCallParser : IParser<Expression>
             && Terminals.Char('(', ref scanner, advance: true)
         )
         {
+            ParameterParsers.Values(ref scanner, result, out var parameters);
             CommonParsers.Spaces0(ref scanner, result, out _);
-            var pos2 = scanner.Position;
-            if (Terminals.Char(')', ref scanner, advance: true))
+            if(Terminals.Char(')', ref scanner, advance: true))
             {
-                parsed = new MethodCall(identifier, scanner.GetLocation(position, scanner.Position - position));
+                parsed = new MethodCall(identifier, parameters, scanner.GetLocation(position..scanner.Position));
                 return true;
             }
-            else if (ExpressionParser.Expression(ref scanner, result, out var first))
-            {
-                var method = new MethodCall(identifier, scanner.GetLocation(position, scanner.Position - position));
-                method.Parameters.Add(first);
-                CommonParsers.Spaces0(ref scanner, result, out _);
-                while (!scanner.IsEof && Terminals.Char(',', ref scanner, advance: true) && CommonParsers.Spaces0(ref scanner, result, out _))
-                {
-                    if (ExpressionParser.Expression(ref scanner, result, out var param))
-                        method.Parameters.Add(param);
-                    else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected expression value", scanner.CreateError(scanner.Position)));
-                        
-                    CommonParsers.Spaces0(ref scanner, result, out _);
-                }
-                if (Terminals.Char(')', ref scanner, advance: true))
-                {
-                    parsed = method;
-                    return true;
-                }
-                else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected parenthesis for closing method call", scanner.CreateError(position)));
-                   
-            }
+            else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected closing parenthesis", scanner.CreateError(scanner.Position)));
         }
         return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }

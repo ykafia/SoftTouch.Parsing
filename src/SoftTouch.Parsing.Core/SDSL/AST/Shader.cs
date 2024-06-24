@@ -29,7 +29,7 @@ public class ShaderClass(Identifier name, TextLocation info) : Node(info)
 {
     public Identifier Name { get; set; } = name;
     public List<ShaderElement> Elements { get; set; } = [];
-    public List<ShaderGenerics> Generics { get; set; } = [];
+    public ShaderParameterDeclarations? Generics { get; set; }
     public List<ShaderMixin> Mixins { get; set; } = [];
 
 
@@ -56,7 +56,7 @@ public class ShaderGenerics(Identifier typename, Identifier name, TextLocation i
 public class ShaderMixin(Identifier name, TextLocation info) : Node(info)
 {
     public Identifier Name { get; set; } = name;
-    public List<ShaderMixinValue> Generics { get; set; } = [];
+    public ShaderExpressionList? Generics { get; set; }
 }
 
 public abstract class ShaderMixinValue(TextLocation info) : Node(info);

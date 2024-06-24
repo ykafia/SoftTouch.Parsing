@@ -5,10 +5,10 @@ namespace SoftTouch.Parsing.SDSL.AST;
 
 public abstract class Expression(TextLocation info) : ValueNode(info);
 
-public class MethodCall(Identifier name, TextLocation info) : Expression(info)
+public class MethodCall(Identifier name, ShaderExpressionList parameters, TextLocation info) : Expression(info)
 {
     public Identifier Name = name;
-    public List<Expression> Parameters = [];
+    public ShaderExpressionList Parameters = parameters;
 
     public override string ToString()
     {

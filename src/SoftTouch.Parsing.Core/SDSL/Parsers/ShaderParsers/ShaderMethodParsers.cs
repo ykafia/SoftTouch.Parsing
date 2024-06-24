@@ -27,9 +27,9 @@ public record struct ShaderMethodParsers : IParser<ShaderElement>
         where TScanner : struct, IScanner
         => new SimpleMethodParser().Match(ref scanner, result, out parsed, in orError);
 
-    public static bool Parameters<TScanner>(ref TScanner scanner, ParseResult result, out ShaderParameterList parsed, in ParseError? orError = null)
+    public static bool Parameters<TScanner>(ref TScanner scanner, ParseResult result, out ShaderParameterDeclarations parsed, in ParseError? orError = null)
         where TScanner : struct, IScanner
-        => new MethodParameterListParser().Match(ref scanner, result, out parsed, orError);
+        => new ParameterDeclarationsParser().Match(ref scanner, result, out parsed, orError);
 }
 
 public record struct SimpleMethodParser : IParser<ShaderMethod>
@@ -136,24 +136,3 @@ public record struct MethodParser : IParser<ShaderMethod>
 
 }
 
-public record struct MethodParameterListParser : IParser<ShaderParameterList>
-{
-    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out ShaderParameterList parsed, in ParseError? orError = null) where TScanner : struct, IScanner
-    {
-        var position = scanner.Position;
-        List<ShaderParameter> parameters = [];
-        while (
-            LiteralsParser.TypeName(ref scanner, result, out var typename)
-            && CommonParsers.Spaces1(ref scanner, result, out _)
-            && LiteralsParser.Identifier(ref scanner, result, out var name)
-            && CommonParsers.Spaces0(ref scanner, result, out _)
-        )
-        {
-            parameters.Add(new(typename, name));
-            if (!Terminals.Char(',', ref scanner, advance: true) && CommonParsers.Spaces0(ref scanner, result, out _))
-                break;
-        }
-        parsed = new(scanner.GetLocation(position..scanner.Position)) { Parameters = parameters };
-        return true;
-    }
-}

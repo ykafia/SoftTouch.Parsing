@@ -47,7 +47,7 @@ public class ShaderMethod(TypeName returnType, Identifier name, TextLocation inf
     public bool? IsVirtual { get; set; } = isVirtual;
     public bool? IsOverride { get; set; } = isOverride;
     public bool? IsClone { get; set; } = isClone;
-    public ShaderParameterList? ParameterList { get; set; }
+    public ShaderParameterDeclarations? ParameterList { get; set; }
     public BlockStatement? Body { get; set; }
 
     public override string ToString()
@@ -58,7 +58,20 @@ public class ShaderMethod(TypeName returnType, Identifier name, TextLocation inf
 
 public record struct ShaderParameter(TypeName TypeName, Identifier Name);
 
-public class ShaderParameterList(TextLocation info) : Node(info)
+
+public abstract class ParameterListNode(TextLocation info) : Node(info);
+
+public class ShaderParameterDeclarations(TextLocation info) : ParameterListNode(info)
 {
     public List<ShaderParameter> Parameters { get; set; } = [];
+}
+
+public class ShaderExpressionList(TextLocation info) : ParameterListNode(info)
+{
+    public List<Expression> Values { get; set; } = [];
+
+    public override string ToString()
+    {
+        return string.Join(", ", Values);
+    }
 }
