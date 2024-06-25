@@ -17,6 +17,8 @@ var file = File.ReadAllText("./SDSL/Commented.sdsl");
 var result = SDSLParser.Parse(file);
 if(result.AST is not null)
     Console.WriteLine(result.AST);
+if(result.Errors.Any())
+    Console.WriteLine(result.Errors[0]);
 
 
 
