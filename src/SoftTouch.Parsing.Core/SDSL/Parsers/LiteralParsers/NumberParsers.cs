@@ -94,7 +94,7 @@ public struct FloatParser : IParser<FloatLiteral>
                     break;
                 else
                     len += 1;
-            node = new FloatLiteral(s, double.Parse(scanner.Span[position..len]), new(scanner.Memory, position..scanner.Position));
+            node = new FloatLiteral(s, double.Parse(scanner.Span[position..(position+len)]), new(scanner.Memory, position..scanner.Position));
 
             return true;
         }

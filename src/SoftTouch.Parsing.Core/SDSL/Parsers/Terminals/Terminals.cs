@@ -23,6 +23,18 @@ public static class Terminals
     public static bool Literal<TScanner>(string c, ref TScanner scanner, bool advance = false)
         where TScanner : struct, IScanner
         => new LiteralTerminalParser(c).Match(ref scanner, advance);
+    public static bool AnyOf<TScanner>(ReadOnlySpan<string> literals, ref TScanner scanner, out string matched, bool advance = false)
+        where TScanner : struct, IScanner
+    {
+        matched = null!;
+        foreach(var l in literals)
+            if(new LiteralTerminalParser(l).Match(ref scanner, advance))
+            {
+                matched = l;
+                return true;
+            }
+        return false;
+    }
     public static DigitTerminalParser Digit(DigitRange? mode = null) => new(mode ?? DigitRange.All);
     public static bool Digit<TScanner>(ref TScanner scanner, DigitRange? mode = null, bool advance = false)
         where TScanner : struct, IScanner
@@ -76,7 +88,8 @@ public struct DigitRange
     public string Chars { get; set; }
     public DigitRange(Range range)
     {
-        Chars = allChars[range];
+        var (o, l) = range.GetOffsetAndLength(allChars.Length);
+        Chars = allChars[o..Math.Min(allChars.Length,o+l+1)];
     }
     public DigitRange(int digit)
     {

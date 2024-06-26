@@ -16,7 +16,12 @@ public record struct LiteralsParser : IParser<Literal>
         where TScanner : struct, IScanner
     {
         var position = scanner.Position;
-        if(Identifier(ref scanner, result, out var i))
+        if (Vector(ref scanner, result, out var v))
+        {
+            literal = v;
+            return true;
+        }
+        else if(Identifier(ref scanner, result, out var i))
         {
             literal = i;
             return true;
@@ -59,62 +64,14 @@ public record struct LiteralsParser : IParser<Literal>
     public static bool Number<TScanner>(ref TScanner scanner, ParseResult result, out NumberLiteral number, in ParseError? orError = null)
         where TScanner : struct, IScanner 
         => new NumberParser().Match(ref scanner, result, out number, in orError);
+    public static bool Vector<TScanner>(ref TScanner scanner, ParseResult result, out VectorLiteral parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner 
+        => new VectorParser().Match(ref scanner, result, out parsed, in orError);
     public static bool Integer<TScanner>(ref TScanner scanner, ParseResult result, out IntegerLiteral number, in ParseError? orError = null)
         where TScanner : struct, IScanner 
         => new IntegerParser().Match(ref scanner, result, out number, in orError);
+
 }
-
-
-public readonly record struct OperatorParser() : ILiteralParser<Operator>
-{
-    static List<string> Operators { get; } = [
-        "!",
-        "~",
-        "++",
-        "--",
-        "+",
-        "-",
-        "*",
-        "/",
-        "%",
-        "<<",
-        ">>",
-        "&",
-        "|",
-        "^",
-        "<",
-        ">",
-        "<=",
-        ">=",
-        "==",
-        "!=",
-        "&&",
-        "||"
-    ];
-    public static bool TryMatchAndAdvance<TScanner>(ref TScanner scanner, string match, out Operator op)
-        where TScanner : struct, IScanner
-    {
-        op = Operator.Nop;
-        if (Terminals.Literal<TScanner>(match, ref scanner))
-        {
-            op = match.ToOperator();
-            scanner.Advance(match.Length);
-            return true;
-        }
-        return false;
-    }
-
-    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Operator op)
-        where TScanner : struct, IScanner
-    {
-        op = Operator.Nop;
-        foreach (var e in Operators)
-            if (TryMatchAndAdvance(ref scanner, e, out op))
-                return true;
-        return false;
-    }
-}
-
 
 
 public record struct Suffix(int Size, bool IsFloatingPoint, bool Signed)
@@ -147,29 +104,16 @@ public readonly record struct FloatSuffixParser() : ILiteralParser<Suffix>
         where TScanner : struct, IScanner
     {
         suffix = new(32, false, false);
-        if (Terminals.Char<TScanner>('f', ref scanner))
+        if (Terminals.AnyOf(["f16", "f32", "f64", "d", "h"], ref scanner, out var matched, advance: true))
         {
-            scanner.Advance(1);
-            if (TryMatchAndAdvance(ref scanner, "16"))
-                suffix = new(16, true, true);
-            else if (TryMatchAndAdvance(ref scanner, "32"))
-                suffix = new(32, true, true);
-            else if (TryMatchAndAdvance(ref scanner, "64"))
-                suffix = new(64, true, true);
-            else
-                suffix = new(32, true, true);
-            return true;
-        }
-        else if (Terminals.Char('d', ref scanner))
-        {
-            scanner.Advance(1);
-            suffix = new(64, true, true);
-            return true;
-        }
-        else if (Terminals.Char('h', ref scanner))
-        {
-            scanner.Advance(1);
-            suffix = new(16, true, true);
+            suffix = matched switch
+            {
+                "f16" or "h"    => new(16, true, true),
+                "f32"           => new(32, true, true),
+                "f64" or "d"    => new(64, true, true),
+                
+                _ => throw new NotImplementedException()
+            };
             return true;
         }
         else return false;
@@ -193,36 +137,22 @@ public readonly record struct IntegerSuffixParser() : ILiteralParser<Suffix>
         where TScanner : struct, IScanner
     {
         suffix = new(32, false, false);
-        if (Terminals.Char('i', ref scanner))
+        if (Terminals.AnyOf(["u8", "u16", "u32", "u64", "i8", "i16", "i32", "i64", "U", "L"], ref scanner, out var matched, advance: true))
         {
-            scanner.Advance(1);
-            if (TryMatchAndAdvance(ref scanner, "8"))
-                suffix = new(8, false, true);
-            else if (TryMatchAndAdvance(ref scanner, "16"))
-                suffix = new(16, false, true);
-            else if (TryMatchAndAdvance(ref scanner, "32"))
-                suffix = new(32, false, true);
-            else if (TryMatchAndAdvance(ref scanner, "64"))
-                suffix = new(64, false, true);
-            return true;
-        }
-        else if (Terminals.Char('u', ref scanner))
-        {
-            scanner.Advance(1);
-            if (TryMatchAndAdvance(ref scanner, "8"))
-                suffix = new(8, false, false);
-            else if (TryMatchAndAdvance(ref scanner, "16"))
-                suffix = new(16, false, false);
-            else if (TryMatchAndAdvance(ref scanner, "32"))
-                suffix = new(32, false, false);
-            else if (TryMatchAndAdvance(ref scanner, "64"))
-                suffix = new(64, false, false);
-            return true;
-        }
-        else if (Terminals.Char('l', ref scanner))
-        {
-            scanner.Advance(1);
-            suffix = new(64, false, true);
+            suffix = matched switch
+            {
+                "u8" => new(8, false, false),
+                "u16" => new(16, false, false),
+                "u32" => new(32, false, false), 
+                "u64" => new(64, false, false), 
+                "i8" => new(8, false, true), 
+                "i16" => new(16, false, true), 
+                "i32" => new(32, false, true), 
+                "i64" => new(64, false, true), 
+                "U" => new(32, false, false), 
+                "L" => new(32, false, true),
+                _ => throw new NotImplementedException()
+            };
             return true;
         }
         else return false;
@@ -278,5 +208,54 @@ public record struct TypeNameParser() : ILiteralParser<TypeName>
             }
         }
         else return false;
+    }
+}
+
+
+
+
+public record struct VectorParser : IParser<VectorLiteral>
+{
+
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out VectorLiteral parsed, in ParseError? orError = null) where TScanner : struct, IScanner
+    {
+        var position = scanner.Position;
+        if (
+            Terminals.AnyOf(["bool", "half", "float", "double", "short", "ushort", "int", "uint", "long", "ulong"], ref scanner, out var baseType, advance: true)
+            && Terminals.Digit(ref scanner, 2..4, advance: true)
+        )
+        {
+            var tnPos = scanner.Position;
+            int size = scanner.Span[scanner.Position - 1] - '0';
+            if (size < 2 || size > 4)
+                return CommonParsers.Exit(ref scanner, result, out parsed, position, new($"A vector cannot be of size {size}", scanner.CreateError(scanner.Position - 1)));
+            CommonParsers.Spaces0(ref scanner, result, out _);
+            if(Terminals.Char('(', ref scanner, advance: true))
+            {
+                var p = new VectorLiteral<NumberLiteral>(new TypeName(scanner.Memory[position..tnPos].ToString(), scanner.GetLocation(position..tnPos)), scanner.GetLocation(..))
+                {
+                    BaseType = new(baseType, scanner.GetLocation((tnPos - baseType.Length)..(tnPos-1)))
+                };
+                while (!scanner.IsEof)
+                {
+                    CommonParsers.Spaces0(ref scanner, result, out _);
+                    LiteralsParser.Number(ref scanner, result, out var number, new("Expecting number value", scanner.CreateError(scanner.Position)));
+                    p.Values.Add(number);
+                    CommonParsers.Spaces0(ref scanner, result, out _);
+                    if (Terminals.Char(',', ref scanner, advance: true))
+                        CommonParsers.Spaces0(ref scanner, result, out _);
+                    else if (Terminals.Char(')', ref scanner, advance: true))
+                        break;
+                }
+                if (scanner.IsEof)
+                    return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Unfinished vector declaration", scanner.CreateError(scanner.Position)));
+                if(p.Values.Count != size && p.Values.Count > size)
+                        return CommonParsers.Exit(ref scanner, result, out parsed, position, new($"Too many values for vector of size {size}", scanner.CreateError(scanner.Position)));
+                parsed = p;
+                return true;
+            }
+            
+        }
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }

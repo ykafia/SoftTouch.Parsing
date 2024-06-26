@@ -6,8 +6,10 @@ namespace SoftTouch.Parsing.SDSL.AST;
 
 
 public abstract class Literal(TextLocation info) : Expression(info);
+public abstract class ValueLiteral(TextLocation info) : Literal(info);
+public abstract class ScalarLiteral(TextLocation info) : ValueLiteral(info);
 
-public abstract class NumberLiteral(TextLocation info) : Literal(info)
+public abstract class NumberLiteral(TextLocation info) : ScalarLiteral(info)
 {
     public abstract double DoubleValue { get; }
     public abstract int IntValue { get; }
@@ -40,11 +42,26 @@ public sealed class FloatLiteral(Suffix suffix, double value, TextLocation info)
 public sealed class HexLiteral(ulong value, TextLocation info) : UnsignedIntegerLiteral(new(32, false, false), value, info);
 
 
-public class BoolLiteral(bool value, TextLocation info) : Literal(info)
+public class BoolLiteral(bool value, TextLocation info) : ScalarLiteral(info)
 {
     public bool Value { get; set; } = value;
 }
 
+public abstract class VectorLiteral(TypeName typeName, TextLocation info) : ValueLiteral(info)
+{
+    public TypeName TypeName { get; set; } = typeName;
+}
+public class VectorLiteral<TValueLiteral>(TypeName typeName, TextLocation info) : VectorLiteral(typeName, info)
+    where TValueLiteral : ValueLiteral
+{
+    public TypeName BaseType { get; set; } = typeName;
+    public List<TValueLiteral> Values { get; set; } = [];
+
+    public override string ToString()
+    {
+        return $"{BaseType}{Values.Count}({string.Join(", ", Values.Select(x => x.ToString()))})";
+    }
+}
 
 public class Identifier(string name, TextLocation info) : Literal(info)
 {

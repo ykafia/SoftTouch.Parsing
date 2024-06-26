@@ -95,6 +95,8 @@ public record struct ShaderClassParser : IParser<ShaderClass>
                         CommonParsers.Spaces0(ref scanner, result, out _);
                         if (Terminals.Char(',', ref scanner, advance: true))
                             CommonParsers.Spaces0(ref scanner, result, out _);
+                        else
+                            break;
                     }
                     if (parsed.Mixins.Count == 0)
                         return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expecting at least one mixin", scanner.CreateError(scanner.Position)));
@@ -137,7 +139,7 @@ public record struct ShaderMixinParser : IParser<ShaderMixin>
             CommonParsers.Spaces0(ref scanner, result, out _);
             if (Terminals.Char('<', ref scanner, advance: true))
             {
-                ParameterParsers.Values(ref scanner, result, out var values, new("Expecting constant generics", scanner.CreateError(position)));
+                ParameterParsers.GenericsList(ref scanner, result, out var values, new("Expecting constant generics", scanner.CreateError(position)));
                 parsed.Generics = values;
                 CommonParsers.Spaces0(ref scanner, result, out _);
                 if (!Terminals.Char('>', ref scanner, advance: true))
