@@ -8,6 +8,7 @@ public record struct StatementParsers : IParser<Statement>
     public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, in ParseError? orError = null)
         where TScanner : struct, IScanner
     {
+        var position = scanner.Position;
         if (Expression(ref scanner, result, out parsed))
             return true;
         else if (Break(ref scanner, result, out parsed))
@@ -20,9 +21,12 @@ public record struct StatementParsers : IParser<Statement>
             return true;
         else if (Block(ref scanner, result, out parsed))
             return true;
-        if (orError is not null)
-            result.Errors.Add(orError.Value);
-        return false;
+        else if (Controls(ref scanner, result, out var cond))
+        {
+            parsed = cond;
+            return true;
+        }
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
     internal static bool Statement<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
         where TScanner : struct, IScanner
@@ -45,6 +49,9 @@ public record struct StatementParsers : IParser<Statement>
     internal static bool DeclareAssign<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
         where TScanner : struct, IScanner
         => new DeclareAssignStatementParser().Match(ref scanner, result, out parsed, orError);
+    public static bool Controls<TScanner>(ref TScanner scanner, ParseResult result, out ConditionalFlow parsed, ParseError? orError = null)
+       where TScanner : struct, IScanner
+       => new ControlsParser().Match(ref scanner, result, out parsed, orError);
 }
 
 

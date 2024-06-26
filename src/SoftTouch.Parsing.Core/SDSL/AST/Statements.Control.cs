@@ -10,16 +10,15 @@ public class ConditionalFlow(If first, TextLocation info) : Flow(info)
     public List<ElseIf> ElseIfs { get; set; } = [];
     public Else? Else { get; set; }
 }
-public class If(Expression condition, TextLocation info) : Flow(info)
+public class If(Expression condition, Statement body, TextLocation info) : Flow(info)
 {
     public Expression Condition { get; set; } = condition;
-    public List<Statement> Body { get; set; } = [];
+    public Statement Body { get; set; } = body;
 }
 
-public class ElseIf(Expression condition, TextLocation info) : If(condition, info);
+public class ElseIf(Expression condition, Statement body, TextLocation info) : If(condition, body, info);
 
-
-public class Else(TextLocation info) : Flow(info)
+public class Else(Statement body, TextLocation info) : Flow(info)
 {
-    public List<Statement> Body { get; set; } = [];
+    public Statement Body { get; set; } = body;
 }
