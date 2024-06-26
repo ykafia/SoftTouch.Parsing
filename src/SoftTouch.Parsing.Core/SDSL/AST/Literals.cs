@@ -54,14 +54,33 @@ public abstract class VectorLiteral(TypeName typeName, TextLocation info) : Valu
 public class VectorLiteral<TValueLiteral>(TypeName typeName, TextLocation info) : VectorLiteral(typeName, info)
     where TValueLiteral : ValueLiteral
 {
-    public TypeName BaseType { get; set; } = typeName;
     public List<TValueLiteral> Values { get; set; } = [];
 
     public override string ToString()
     {
-        return $"{BaseType}{Values.Count}({string.Join(", ", Values.Select(x => x.ToString()))})";
+        return $"{TypeName}{Values.Count}({string.Join(", ", Values.Select(x => x.ToString()))})";
     }
 }
+
+
+public abstract class MatrixLiteral(TypeName typeName, int rows, int cols, TextLocation info) : ValueLiteral(info)
+{
+    public TypeName TypeName { get; set; } = typeName;
+    public int Rows { get; set; } = rows;
+    public int Cols { get; set; } = cols;
+}
+public class MatrixLiteral<TValueLiteral>(TypeName typeName, int rows, int cols, TextLocation info) : MatrixLiteral(typeName, rows, cols, info)
+    where TValueLiteral : ValueLiteral
+{
+    public List<TValueLiteral> Values { get; set; } = [];
+
+    public override string ToString()
+    {
+        return $"{TypeName}{Values.Count}({string.Join(", ", Values.Select(x => x.ToString()))})";
+    }
+}
+
+
 
 public class Identifier(string name, TextLocation info) : Literal(info)
 {
