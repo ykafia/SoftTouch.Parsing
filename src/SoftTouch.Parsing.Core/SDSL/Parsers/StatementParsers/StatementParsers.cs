@@ -14,6 +14,11 @@ public record struct StatementParsers : IParser<Statement>
             parsed = cond;
             return true;
         }
+        else if (Flow(ref scanner, result, out var flow))
+        {
+            parsed = flow;
+            return true;
+        }
         else if (Expression(ref scanner, result, out parsed))
             return true;
         else if (Break(ref scanner, result, out parsed))
@@ -54,9 +59,12 @@ public record struct StatementParsers : IParser<Statement>
     internal static bool DeclareAssign<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
         where TScanner : struct, IScanner
         => new DeclareAssignStatementParser().Match(ref scanner, result, out parsed, orError);
-    public static bool Controls<TScanner>(ref TScanner scanner, ParseResult result, out ConditionalFlow parsed, ParseError? orError = null)
+    internal static bool Controls<TScanner>(ref TScanner scanner, ParseResult result, out ConditionalFlow parsed, ParseError? orError = null)
        where TScanner : struct, IScanner
        => new ControlsParser().Match(ref scanner, result, out parsed, orError);
+    internal static bool Flow<TScanner>(ref TScanner scanner, ParseResult result, out Flow parsed, ParseError? orError = null)
+      where TScanner : struct, IScanner
+      => new FlowParsers().Match(ref scanner, result, out parsed, orError);
 }
 
 

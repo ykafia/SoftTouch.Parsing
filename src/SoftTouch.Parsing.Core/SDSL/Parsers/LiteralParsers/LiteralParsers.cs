@@ -294,9 +294,7 @@ public record struct MatrixParser : IParser<MatrixLiteral>
                     if (LiteralsParser.Number(ref scanner, result, out var number))
                         p.Values.Add(number);
                     else if (LiteralsParser.Vector(ref scanner, result, out var vector, new("Expecting number or vector value", scanner.CreateError(scanner.Position))))
-                    {
                         p.Values.Add(vector);
-                    }
                     else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
                     CommonParsers.Spaces0(ref scanner, result, out _);
                     if (Terminals.Char(',', ref scanner, advance: true))

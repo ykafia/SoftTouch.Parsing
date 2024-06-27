@@ -7,28 +7,28 @@ public class Break(TextLocation info) : Statement(info);
 public class Continue(TextLocation info) : Statement(info);
 
 
-public class ForEach(Identifier typename, Identifier variable, Expression collection, TextLocation info) : Loop(info)
+public class ForEach(TypeName typename, Identifier variable, Expression collection, Statement body, TextLocation info) : Loop(info)
 {
-    public Identifier Typename { get; set; } = typename;
+    public TypeName Typename { get; set; } = typename;
     public Identifier Variable { get; set; } = variable;
     public Expression Collection { get; set; } = collection;
-    public List<Statement> Body { get; set; } = [];
+    public Statement Body { get; set; } = body;
 }
 
 
 public abstract class ForInitializer(TextLocation info) : Node(info);
-public abstract class InitializerDeclare(Identifier typename, Identifier name, Expression value, TextLocation info) : Node(info)
+public abstract class InitializerDeclare(TypeName typename, Identifier name, Expression value, TextLocation info) : Node(info)
 {
-    public Identifier TypeName { get; set; } = typename;
+    public TypeName TypeName { get; set; } = typename;
     public Identifier VariableName { get; set; } = name;
     public Expression Value { get; set; } = value;
 }
 
 
-public class While(Expression condition, TextLocation info) : Loop(info)
+public class While(Expression condition, Statement body, TextLocation info) : Loop(info)
 {
     public Expression Condition { get; set; } = condition;
-    public List<Statement> Body { get; set; } = [];
+    public Statement Body { get; set; } = body;
 }
 
 public enum ForAnnotationKind
