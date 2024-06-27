@@ -18,6 +18,8 @@ public record struct StatementParsers : IParser<Statement>
             return true;
         else if (Break(ref scanner, result, out parsed))
             return true;
+        else if (Return(ref scanner, result, out parsed))
+            return true;
         else if (Continue(ref scanner, result, out parsed))
             return true;
         else if (Declare(ref scanner, result, out parsed))
@@ -37,6 +39,9 @@ public record struct StatementParsers : IParser<Statement>
     internal static bool Break<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
         where TScanner : struct, IScanner
         => new BreakParser().Match(ref scanner, result, out parsed, orError);
+    internal static bool Return<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
+        where TScanner : struct, IScanner
+        => new ReturnStatementParser().Match(ref scanner, result, out parsed, orError);
     internal static bool Continue<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
         where TScanner : struct, IScanner
     => new ContinueParser().Match(ref scanner, result, out parsed, orError);
@@ -61,14 +66,19 @@ public record struct ReturnStatementParser : IParser<Statement>
         where TScanner : struct, IScanner
     {
         var position = scanner.Position;
-        if (
+        if (Terminals.Literal("return;", ref scanner, advance: true))
+        {
+            parsed = new Return(scanner.GetLocation(position..scanner.Position));
+            return true;
+        }
+        else if (
             Terminals.Literal("return", ref scanner, advance: true)
             && CommonParsers.Spaces1(ref scanner, result, out _, new("Expected at least one space", scanner.CreateError(scanner.Position)))
         )
         {
             if (Terminals.Char(';', ref scanner, advance: true))
             {
-                parsed = new Return(scanner.GetLocation(position, scanner.Position - position));
+                parsed = new Return(scanner.GetLocation(position..scanner.Position));
                 return true;
             }
             else if (
@@ -152,7 +162,7 @@ public record struct DeclareStatementParser : IParser<Statement>
     {
         var position = scanner.Position;
         if (
-            LiteralsParser.Identifier(ref scanner, result, out var typeName)
+            LiteralsParser.TypeName(ref scanner, result, out var typeName)
             && CommonParsers.Spaces1(ref scanner, result, out _, new("Expected at least one space", scanner.CreateError(scanner.Position)))
             && LiteralsParser.Identifier(ref scanner, result, out var variableName, new("Expected an identifier", scanner.CreateError(scanner.Position)))
             && CommonParsers.Spaces0(ref scanner, result, out _)
@@ -173,9 +183,9 @@ public record struct DeclareAssignStatementParser : IParser<Statement>
     {
         var position = scanner.Position;
         if (
-            LiteralsParser.Identifier(ref scanner, result, out var typeName)
+            LiteralsParser.TypeName(ref scanner, result, out var typeName)
             && CommonParsers.Spaces1(ref scanner, result, out _, new("Expected at least one space", scanner.CreateError(scanner.Position)))
-            && LiteralsParser.Identifier(ref scanner, result, out var variableName)
+            && LiteralsParser.Identifier(ref scanner, result, out var variableName, new("Use of reserved name for identifier", scanner.CreateError(scanner.Position)))
             && CommonParsers.Spaces0(ref scanner, result, out _)
             && Terminals.Char('=', ref scanner, advance: true)
             && CommonParsers.Spaces0(ref scanner, result, out _)

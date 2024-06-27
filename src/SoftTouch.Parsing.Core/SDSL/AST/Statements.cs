@@ -16,11 +16,16 @@ public class ExpressionStatement(Expression expression, TextLocation info) : Sta
 public class Return(TextLocation info, Expression? expression = null) : Statement(info)
 {
     public Expression? Value { get; set; } = expression;
+
+    public override string ToString()
+    {
+        return $"return {Value};";
+    }
 }
 
-public class Declare(Identifier typename, Identifier name, TextLocation info) : Statement(info)
+public class Declare(TypeName typename, Identifier name, TextLocation info) : Statement(info)
 {
-    public Identifier TypeName { get; set; } = typename;
+    public TypeName TypeName { get; set; } = typename;
     public Identifier VariableName { get; set; } = name;
 
     public override string ToString()
@@ -30,7 +35,7 @@ public class Declare(Identifier typename, Identifier name, TextLocation info) : 
 }
 
 
-public class DeclareAssign(Identifier typename, Identifier name, Expression value, TextLocation info) : Declare(typename, name, info)
+public class DeclareAssign(TypeName typename, Identifier name, Expression value, TextLocation info) : Declare(typename, name, info)
 {
     public Expression Value { get; set; } = value;
     public override string ToString()
