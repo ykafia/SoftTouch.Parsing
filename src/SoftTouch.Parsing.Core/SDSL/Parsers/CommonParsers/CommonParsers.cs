@@ -16,7 +16,8 @@ public static class CommonParsers
             parsed = null!;
             return false;
         }
-        scanner.Position = beginningPosition;
+        if(!scanner.IsEof && result.Errors.Count == 0)
+            scanner.Position = beginningPosition;
         parsed = null!;
         return false;
     }

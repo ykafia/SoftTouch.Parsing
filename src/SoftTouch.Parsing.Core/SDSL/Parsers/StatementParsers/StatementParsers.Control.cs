@@ -20,6 +20,8 @@ public record struct ControlsParser : IParser<ConditionalFlow>
             parsed.Info = scanner.GetLocation(position..scanner.Position);
             return true;
         }
+        else if(Terminals.Literal("else ", ref scanner))
+            return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Else block should be preceeded by If statement", scanner.CreateError(scanner.Position)));
         return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 
