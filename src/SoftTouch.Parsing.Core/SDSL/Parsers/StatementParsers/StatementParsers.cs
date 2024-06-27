@@ -9,7 +9,12 @@ public record struct StatementParsers : IParser<Statement>
         where TScanner : struct, IScanner
     {
         var position = scanner.Position;
-        if (Expression(ref scanner, result, out parsed))
+        if (Controls(ref scanner, result, out var cond))
+        {
+            parsed = cond;
+            return true;
+        }
+        else if (Expression(ref scanner, result, out parsed))
             return true;
         else if (Break(ref scanner, result, out parsed))
             return true;
@@ -21,11 +26,6 @@ public record struct StatementParsers : IParser<Statement>
             return true;
         else if (Block(ref scanner, result, out parsed))
             return true;
-        else if (Controls(ref scanner, result, out var cond))
-        {
-            parsed = cond;
-            return true;
-        }
         return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
     internal static bool Statement<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
