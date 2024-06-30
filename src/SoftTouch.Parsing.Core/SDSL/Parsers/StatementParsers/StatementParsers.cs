@@ -219,14 +219,14 @@ public record struct AssignmentsParser : IParser<Statement>
         else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
-public record struct NameValueParser : IParser<NameValue>
+public record struct VariableAssignParser : IParser<VariableAssign>
 {
-    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out NameValue parsed, in ParseError? orError = null) where TScanner : struct, IScanner
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out VariableAssign parsed, in ParseError? orError = null) where TScanner : struct, IScanner
     {
         var position = scanner.Position;
         if (LiteralsParser.Identifier(ref scanner, result, out var identifier))
         {
-            if (CommonParsers.FollowedBy(ref scanner, Terminals.Char('='), withSpaces: true, advance: true))
+            if (CommonParsers.FollowedBy(ref scanner, LiteralsParser.AnyOf, withSpaces: true, advance: true))
             {
                 CommonParsers.Spaces0(ref scanner, result, out _);
                 if(ExpressionParser.Expression(ref scanner, result, out var expression))

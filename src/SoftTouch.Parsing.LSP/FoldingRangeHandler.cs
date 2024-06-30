@@ -12,7 +12,7 @@ internal class FoldingRangeHandler : IFoldingRangeHandler
     public FoldingRangeRegistrationOptions GetRegistrationOptions() =>
         new FoldingRangeRegistrationOptions
         {
-            DocumentSelector = TextDocumentSelector.ForLanguage("csharp")
+            DocumentSelector = TextDocumentSelector.ForLanguage("sdsl")
         };
 
     public Task<Container<FoldingRange>?> Handle(
@@ -34,6 +34,6 @@ internal class FoldingRangeHandler : IFoldingRangeHandler
 
     public FoldingRangeRegistrationOptions GetRegistrationOptions(FoldingRangeCapability capability, ClientCapabilities clientCapabilities) => new FoldingRangeRegistrationOptions
     {
-        DocumentSelector = TextDocumentSelector.ForLanguage("csharp")
+        DocumentSelector = TextDocumentSelector.ForLanguage("sdsl")
     };
 }

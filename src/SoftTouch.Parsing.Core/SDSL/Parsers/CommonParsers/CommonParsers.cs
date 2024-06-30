@@ -62,6 +62,22 @@ public static class CommonParsers
         scanner.Position = position;
         return false;
     }
+    public static bool FollowedBy<TScanner, TTerminal>(ref TScanner scanner, TTerminal terminal, bool withSpaces = false, bool advance = false)
+        where TScanner : struct, IScanner
+        where TTerminal : Func<bool>
+    {
+        var position = scanner.Position;
+        if (withSpaces)
+            Spaces0(ref scanner, null!, out _);
+        if (terminal.Match(ref scanner, advance: false))
+        {
+            if (!advance)
+                scanner.Position = position;
+            return true;
+        }
+        scanner.Position = position;
+        return false;
+    }
 
     public static bool Until<TScanner>(ref TScanner scanner, char value, bool advance = false)
         where TScanner : struct, IScanner
@@ -124,7 +140,7 @@ public static class CommonParsers
     }
 
 
-    public static bool Repeat<TScanner, TParser, TNode, TOut>(ref TScanner scanner, TParser parser, ParseResult result, out List<TNode> nodes, bool withSpaces = false, string? separator = null, in ParseError? orError = null)
+    public static bool Repeat<TScanner, TParser, TNode, TOut>(ref TScanner scanner, TParser parser, ParseResult result, out List<TNode> nodes, int minimum, bool withSpaces = false, string? separator = null, in ParseError? orError = null)
         where TScanner : struct, IScanner
         where TParser : struct, IParser<TNode>
         where TNode : Node
@@ -142,9 +158,14 @@ public static class CommonParsers
 
             if (separator is not null)
             {
-                Terminals.Literal(separator, ref scanner);
-                if (withSpaces)
-                    Spaces0(ref scanner, result, out _);
+                if (Terminals.Literal(separator, ref scanner, advance: true))
+                {
+                    if (withSpaces)
+                        Spaces0(ref scanner, result, out _);
+                }
+                else if(nodes.Count >= minimum)
+                    return true;
+                else Exit(ref scanner, result, out nodes, position, orError);
             }
             else Exit(ref scanner, result, out nodes, position, orError);
         }

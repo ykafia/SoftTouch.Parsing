@@ -39,22 +39,23 @@ public class Declare(TypeName typename, Identifier name, TextLocation info) : De
     }
 }
 
-public class NameValue(Identifier name, TextLocation info, Expression? value = null) : Node(info)
+public class VariableAssign(Identifier name, TextLocation info, AssignOperator? op = null,  Expression? value = null) : Node(info)
 {
     public Identifier Name { get; set; } = name;
+    public AssignOperator? Operator { get; set; } = op;
     public Expression? Value { get; set; } = value;
 
     public override string ToString()
-        => Value switch 
+        => Value switch
         {
             null => Name.Name,
             Expression v => $"{Name} = {v}"
         };
 }
 
-public class MultiDeclareAssign(TypeName typename, TextLocation info) : Declaration(typename, info)
+public class MultiAssign(TypeName typename, TextLocation info) : Declaration(typename, info)
 {
-    public List<NameValue> Variables { get; set; } = [];
+    public List<VariableAssign> Variables { get; set; } = [];
 }
 
 public class Assign(Expression assigned, AssignOperator op, Expression value, TextLocation info) : Statement(info)
