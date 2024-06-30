@@ -17,7 +17,7 @@ public static class CommonParsers
             parsed = null!;
             return false;
         }
-        if(!scanner.IsEof && result.Errors.Count == 0)
+        if (!scanner.IsEof && result.Errors.Count == 0)
             scanner.Position = beginningPosition;
         parsed = null!;
         return false;
@@ -46,7 +46,7 @@ public static class CommonParsers
         return true;
     }
 
-    public static bool FollowedBy<TScanner, TTerminal>(ref TScanner scanner, TTerminal terminal, bool withSpaces = false)
+    public static bool FollowedBy<TScanner, TTerminal>(ref TScanner scanner, TTerminal terminal, bool withSpaces = false, bool advance = false)
         where TScanner : struct, IScanner
         where TTerminal : struct, ITerminal
     {
@@ -55,7 +55,8 @@ public static class CommonParsers
             Spaces0(ref scanner, null!, out _);
         if (terminal.Match(ref scanner, advance: false))
         {
-            scanner.Position = position;
+            if (!advance)
+                scanner.Position = position;
             return true;
         }
         scanner.Position = position;
@@ -132,17 +133,17 @@ public static class CommonParsers
         nodes = [];
         while (!scanner.IsEof)
         {
-            if(parser.Match(ref scanner, result, out var node, orError))
+            if (parser.Match(ref scanner, result, out var node, orError))
             {
                 nodes.Add(node);
-                if(withSpaces)
+                if (withSpaces)
                     Spaces0(ref scanner, result, out _);
             }
-            
+
             if (separator is not null)
             {
                 Terminals.Literal(separator, ref scanner);
-                if(withSpaces)
+                if (withSpaces)
                     Spaces0(ref scanner, result, out _);
             }
             else Exit(ref scanner, result, out nodes, position, orError);

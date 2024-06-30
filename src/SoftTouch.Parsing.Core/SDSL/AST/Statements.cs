@@ -23,25 +23,38 @@ public class Return(TextLocation info, Expression? expression = null) : Statemen
     }
 }
 
-public class Declare(TypeName typename, Identifier name, TextLocation info) : Statement(info)
+public abstract class Declaration(TypeName typename, TextLocation info) : Statement(info)
 {
     public TypeName TypeName { get; set; } = typename;
-    public Identifier VariableName { get; set; } = name;
+}
+
+public class Declare(TypeName typename, Identifier name, TextLocation info) : Declaration(typename, info)
+{
+    public Identifier Name { get; set; } = name;
+    public Expression? Value { get; set; }
 
     public override string ToString()
     {
-        return $"{TypeName} {VariableName};";
+        return $"{TypeName} {Name};";
     }
 }
 
-
-public class DeclareAssign(TypeName typename, Identifier name, Expression value, TextLocation info) : Declare(typename, name, info)
+public class NameValue(Identifier name, TextLocation info, Expression? value = null) : Node(info)
 {
-    public Expression Value { get; set; } = value;
+    public Identifier Name { get; set; } = name;
+    public Expression? Value { get; set; } = value;
+
     public override string ToString()
-    {
-        return $"{TypeName} {VariableName} = {Value};";
-    }
+        => Value switch 
+        {
+            null => Name.Name,
+            Expression v => $"{Name} = {v}"
+        };
+}
+
+public class MultiDeclareAssign(TypeName typename, TextLocation info) : Declaration(typename, info)
+{
+    public List<NameValue> Variables { get; set; } = [];
 }
 
 public class Assign(Expression assigned, AssignOperator op, Expression value, TextLocation info) : Statement(info)
