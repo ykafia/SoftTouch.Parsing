@@ -1,6 +1,6 @@
 namespace MyNamespace.SoftTouch.Hello;
     
-shader Parent 
+shader Parent
 {
     stream int a;
 }

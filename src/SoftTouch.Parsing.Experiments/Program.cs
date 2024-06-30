@@ -10,8 +10,8 @@ var scanner = new Scanner("");
 
 // var result = Grammar.Match<PostfixParser, Expression>("machin.chose().hello.world[3]-2*(3+ hello.world())");
 // var result = Grammar.Match<ExpressionParser, Expression>("5 ?2: machin.  chose()  .   hello.world [  3 ]  -   2 *(3+ hello.world())");
-var path = @"C:\Users\youness_kafia\Documents\dotnetProjs\SoftTouch.Parsing\assets";
-// var path = @"C:\Users\kafia\source\repos\ykafia\SoftTouch.Parsing\assets";
+// var path = @"C:\Users\youness_kafia\Documents\dotnetProjs\SoftTouch.Parsing\assets";
+var path = @"C:\Users\kafia\source\repos\ykafia\SoftTouch.Parsing\assets";
 Directory.SetCurrentDirectory(path);
 var file = File.ReadAllText("./SDSL/Commented.sdsl");
 var result = SDSLParser.Parse(file);

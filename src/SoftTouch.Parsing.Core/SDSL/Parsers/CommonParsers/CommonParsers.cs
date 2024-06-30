@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using SoftTouch.Parsing.SDSL.AST;
 
 namespace SoftTouch.Parsing.SDSL;
@@ -7,7 +8,7 @@ public static class CommonParsers
 {
     public static bool Exit<TScanner, TNode>(ref TScanner scanner, ParseResult result, out TNode parsed, int beginningPosition, in ParseError? orError = null)
         where TScanner : struct, IScanner
-        where TNode : Node
+        where TNode : class
     {
         if (orError is not null)
         {
@@ -119,5 +120,33 @@ public static class CommonParsers
         while (!scanner.IsEof && !(t1.Match(ref scanner, advance) || t2.Match(ref scanner, advance) || t3.Match(ref scanner, advance)))
             scanner.Advance(1);
         return !scanner.IsEof;
+    }
+
+
+    public static bool Repeat<TScanner, TParser, TNode, TOut>(ref TScanner scanner, TParser parser, ParseResult result, out List<TNode> nodes, bool withSpaces = false, string? separator = null, in ParseError? orError = null)
+        where TScanner : struct, IScanner
+        where TParser : struct, IParser<TNode>
+        where TNode : Node
+    {
+        var position = scanner.Position;
+        nodes = [];
+        while (!scanner.IsEof)
+        {
+            if(parser.Match(ref scanner, result, out var node, orError))
+            {
+                nodes.Add(node);
+                if(withSpaces)
+                    Spaces0(ref scanner, result, out _);
+            }
+            
+            if (separator is not null)
+            {
+                Terminals.Literal(separator, ref scanner);
+                if(withSpaces)
+                    Spaces0(ref scanner, result, out _);
+            }
+            else Exit(ref scanner, result, out nodes, position, orError);
+        }
+        return true;
     }
 }
