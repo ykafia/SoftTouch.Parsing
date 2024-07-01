@@ -6,6 +6,9 @@ using SoftTouch.Parsing.SDSL;
 using SoftTouch.Parsing.SDSL.AST;
 using SoftTouch.Parsing.SDSL.PreProcessing;
 
+
+// Creating a scanner
+// for parsing code
 var scanner = new Scanner("");
 
 // var result = Grammar.Match<PostfixParser, Expression>("machin.chose().hello.world[3]-2*(3+ hello.world())");
