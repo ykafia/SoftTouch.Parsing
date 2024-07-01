@@ -46,8 +46,18 @@ public record struct ForParser : IParser<For>
     public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out For parsed, in ParseError? orError = null)
         where TScanner : struct, IScanner
     {
-        throw new NotImplementedException();
-        // var position = scanner.Position;
+        var position = scanner.Position;
+        if(
+            Terminals.Literal("for", ref scanner, advance: true)
+            && CommonParsers.FollowedBy(ref scanner, Terminals.Char('('), withSpaces: true)
+        )
+        {
+            CommonParsers.Spaces0(ref scanner, result, out _);
+            Terminals.Char('(', ref scanner, advance: true);
+            throw new NotImplementedException();
+
+        }
+        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
         // if (
         //     Terminals.Literal("if", ref scanner, advance: true)
         //     && CommonParsers.Spaces0(ref scanner, result, out _)

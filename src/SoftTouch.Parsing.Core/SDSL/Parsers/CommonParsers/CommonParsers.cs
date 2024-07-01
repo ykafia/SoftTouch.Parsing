@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using SoftTouch.Parsing.SDSL.AST;
 
 namespace SoftTouch.Parsing.SDSL;
@@ -7,7 +8,7 @@ public static class CommonParsers
 {
     public static bool Exit<TScanner, TNode>(ref TScanner scanner, ParseResult result, out TNode parsed, int beginningPosition, in ParseError? orError = null)
         where TScanner : struct, IScanner
-        where TNode : Node
+        where TNode : class
     {
         if (orError is not null)
         {
@@ -16,7 +17,7 @@ public static class CommonParsers
             parsed = null!;
             return false;
         }
-        if(!scanner.IsEof && result.Errors.Count == 0)
+        if (!scanner.IsEof && result.Errors.Count == 0)
             scanner.Position = beginningPosition;
         parsed = null!;
         return false;
@@ -45,7 +46,7 @@ public static class CommonParsers
         return true;
     }
 
-    public static bool FollowedBy<TScanner, TTerminal>(ref TScanner scanner, TTerminal terminal, bool withSpaces = false)
+    public static bool FollowedBy<TScanner, TTerminal>(ref TScanner scanner, TTerminal terminal, bool withSpaces = false, bool advance = false)
         where TScanner : struct, IScanner
         where TTerminal : struct, ITerminal
     {
@@ -54,7 +55,24 @@ public static class CommonParsers
             Spaces0(ref scanner, null!, out _);
         if (terminal.Match(ref scanner, advance: false))
         {
-            scanner.Position = position;
+            if (!advance)
+                scanner.Position = position;
+            return true;
+        }
+        scanner.Position = position;
+        return false;
+    }
+    public static bool FollowedBy<TScanner, TTerminal>(ref TScanner scanner, TTerminal terminal, bool withSpaces = false, bool advance = false)
+        where TScanner : struct, IScanner
+        where TTerminal : Func<bool>
+    {
+        var position = scanner.Position;
+        if (withSpaces)
+            Spaces0(ref scanner, null!, out _);
+        if (terminal.Match(ref scanner, advance: false))
+        {
+            if (!advance)
+                scanner.Position = position;
             return true;
         }
         scanner.Position = position;
@@ -119,5 +137,38 @@ public static class CommonParsers
         while (!scanner.IsEof && !(t1.Match(ref scanner, advance) || t2.Match(ref scanner, advance) || t3.Match(ref scanner, advance)))
             scanner.Advance(1);
         return !scanner.IsEof;
+    }
+
+
+    public static bool Repeat<TScanner, TParser, TNode, TOut>(ref TScanner scanner, TParser parser, ParseResult result, out List<TNode> nodes, int minimum, bool withSpaces = false, string? separator = null, in ParseError? orError = null)
+        where TScanner : struct, IScanner
+        where TParser : struct, IParser<TNode>
+        where TNode : Node
+    {
+        var position = scanner.Position;
+        nodes = [];
+        while (!scanner.IsEof)
+        {
+            if (parser.Match(ref scanner, result, out var node, orError))
+            {
+                nodes.Add(node);
+                if (withSpaces)
+                    Spaces0(ref scanner, result, out _);
+            }
+
+            if (separator is not null)
+            {
+                if (Terminals.Literal(separator, ref scanner, advance: true))
+                {
+                    if (withSpaces)
+                        Spaces0(ref scanner, result, out _);
+                }
+                else if(nodes.Count >= minimum)
+                    return true;
+                else Exit(ref scanner, result, out nodes, position, orError);
+            }
+            else Exit(ref scanner, result, out nodes, position, orError);
+        }
+        return true;
     }
 }

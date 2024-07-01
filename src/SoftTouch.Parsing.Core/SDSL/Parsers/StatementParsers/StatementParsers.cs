@@ -184,7 +184,7 @@ public record struct DeclareStatementParser : IParser<Statement>
     }
 }
 
-public record struct DeclareAssignStatementParser : IParser<Statement>
+public record struct DeclarationStatementParser : IParser<Statement>
 {
     public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, in ParseError? orError = null)
         where TScanner : struct, IScanner
@@ -208,6 +208,44 @@ public record struct DeclareAssignStatementParser : IParser<Statement>
         else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
+
+public record struct AssignmentsParser : IParser<Statement>
+{
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
+    {
+        var position = scanner.Position;
+        if (CommonParsers.Repeat(ref scanner, ))
+        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
+    }
+}
+public record struct VariableAssignParser : IParser<VariableAssign>
+{
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out VariableAssign parsed, in ParseError? orError = null) where TScanner : struct, IScanner
+    {
+        var position = scanner.Position;
+        if (LiteralsParser.Identifier(ref scanner, result, out var identifier))
+        {
+            if (CommonParsers.FollowedBy(ref scanner, LiteralsParser.AnyOf, withSpaces: true, advance: true))
+            {
+                CommonParsers.Spaces0(ref scanner, result, out _);
+                if(ExpressionParser.Expression(ref scanner, result, out var expression))
+                {
+                    parsed = new(identifier, scanner.GetLocation(position..scanner.Position), expression);
+                    return true;
+                }
+                else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected expression here", scanner.CreateError(position)));
+            }
+            else
+            {
+                parsed = new(identifier, scanner.GetLocation(position..scanner.Position));
+                return true;
+            }
+        }
+        else return CommonParsers.Exit(ref scanner, result, out parsed, position);
+    }
+}
+
 
 
 public record struct BlockStatementParser : IParser<Statement>

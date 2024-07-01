@@ -62,6 +62,25 @@ public record struct LiteralsParser : IParser<Literal>
         where TScanner : struct, IScanner
         => new IntegerParser().Match(ref scanner, result, out number, in orError);
 
+    public static bool AssignOperator<TScanner>(ref TScanner scanner, ParseResult result, out AssignOperator? op, in ParseError? orError = null)
+        where TScanner : struct, IScanner
+    {
+        op = null;
+        if(
+            Terminals.AnyOf(
+                ["=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>="], 
+                ref scanner, 
+                out var matched, 
+                advance: true
+            )
+        )
+        {
+            op = matched.ToAssignOperator();
+            return true;
+        }
+        else return false;
+    }
+
 }
 
 
