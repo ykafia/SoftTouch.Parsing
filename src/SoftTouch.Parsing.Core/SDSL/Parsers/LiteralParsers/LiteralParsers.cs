@@ -62,10 +62,10 @@ public record struct LiteralsParser : IParser<Literal>
         where TScanner : struct, IScanner
         => new IntegerParser().Match(ref scanner, result, out number, in orError);
 
-    public static bool AssignOperator<TScanner>(ref TScanner scanner, ParseResult result, out AssignOperator? op, in ParseError? orError = null)
+    public static bool AssignOperators<TScanner>(ref TScanner scanner, ParseResult result, out AssignOperator op, in ParseError? orError = null)
         where TScanner : struct, IScanner
     {
-        op = null;
+        op = AssignOperator.NOp;
         if(
             Terminals.AnyOf(
                 ["=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>="], 
