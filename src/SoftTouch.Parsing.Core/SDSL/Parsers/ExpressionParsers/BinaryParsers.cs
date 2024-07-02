@@ -19,6 +19,12 @@ public struct ExpressionParser : IParser<Expression>
     public static bool Add<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
         where TScanner : struct, IScanner
         => new AdditionParser().Match(ref scanner, result, out parsed, in orError);
+    public static bool OtherAdd<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
+        => new OtherAdditionParser().Match(ref scanner, result, out parsed, in orError);
+    public static bool OtherMul<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
+        => new OtherMultiplicationParser().Match(ref scanner, result, out parsed, in orError);
     public static bool Mul<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
         where TScanner : struct, IScanner
         => new MultiplicationParser().Match(ref scanner, result, out parsed, in orError);
@@ -444,6 +450,37 @@ public record struct AdditionParser() : IParser<Expression>
     }
 }
 
+public record struct OtherAdditionParser() : IParser<Expression>
+{
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
+    {
+        char op = '\0';
+        parsed = null!;
+        var position = scanner.Position;
+        do
+        {
+            CommonParsers.Spaces0(ref scanner, result, out _);
+            if(op != '\0' && parsed is not null)
+            {
+                if (ExpressionParser.OtherMul(ref scanner, result, out var mul))
+                    parsed = new BinaryExpression(parsed, op.ToOperator(), mul, scanner.GetLocation(position..scanner.Position));
+                else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expecting MulExpression", scanner.CreateError(scanner.Position)));
+            }
+            else if(parsed is null && op == '\0')
+            {
+                if (ExpressionParser.OtherMul(ref scanner, result, out var mul))
+                    parsed = mul;
+                else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
+            }
+        }
+        while (Terminals.Set("+-", ref scanner, out op, advance: true));
+        if (parsed is not null)
+            return true;
+        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
+    }
+}
+
 public record struct MultiplicationParser() : IParser<Expression>
 {
     public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
@@ -479,5 +516,36 @@ public record struct MultiplicationParser() : IParser<Expression>
             }
         }
         return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
+    }
+}
+
+public record struct OtherMultiplicationParser() : IParser<Expression>
+{
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Expression parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
+    {
+        char op = '\0';
+        parsed = null!;
+        var position = scanner.Position;
+        do
+        {
+            CommonParsers.Spaces0(ref scanner, result, out _);
+            if(op != '\0' && parsed is not null)
+            {
+                if (UnaryParsers.Prefix(ref scanner, result, out var mul))
+                    parsed = new BinaryExpression(parsed, op.ToOperator(), mul, scanner.GetLocation(position..scanner.Position));
+                else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expecting MulExpression", scanner.CreateError(scanner.Position)));
+            }
+            else if(parsed is null && op == '\0')
+            {
+                if (UnaryParsers.Prefix(ref scanner, result, out var mul))
+                    parsed = mul;
+                else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
+            }
+        }
+        while (Terminals.Set("*/%", ref scanner, out op, advance: true));
+        if (parsed is not null)
+            return true;
+        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }

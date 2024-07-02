@@ -4,4 +4,4 @@ using BenchmarkDotNet.Running;
 using SoftTouch.Parsing.Benchmarks;
 
 
-BenchmarkRunner.Run<ParserBench>();
+BenchmarkRunner.Run<ExpressionBench>();

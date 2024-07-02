@@ -19,6 +19,19 @@ public static class Terminals
     public static bool Set<TScanner>(string set, ref TScanner scanner, bool advance = false)
         where TScanner : struct, IScanner
         => new SetTerminalParser(set).Match(ref scanner, advance);
+    
+    public static bool Set<TScanner>(string set, ref TScanner scanner, out char chosen, bool advance = false)
+        where TScanner : struct, IScanner
+    {
+        chosen = '\0';
+        foreach(var c in set)
+            if(Char(c, ref scanner, advance: advance))
+            {
+                chosen = c;
+                return true;
+            }
+        return false;
+    }
     public static LiteralTerminalParser Literal(string literal) => new(literal);
     public static bool Literal<TScanner>(string c, ref TScanner scanner, bool advance = false)
         where TScanner : struct, IScanner
