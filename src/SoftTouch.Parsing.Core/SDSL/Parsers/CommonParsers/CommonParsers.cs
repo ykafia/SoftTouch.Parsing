@@ -7,7 +7,9 @@ namespace SoftTouch.Parsing.SDSL;
 
 public delegate bool ParserDelegate<TScanner>(ref TScanner scanner, ParseResult result)
     where TScanner : struct, IScanner;
-public delegate bool ParserValueDelegate<TScanner, TResult>(ref TScanner scanner, ParseResult result, out TResult parsed)
+public delegate bool ParserValueDelegate<TScanner, TResult>(ref TScanner scanner, ParseResult result, out TResult parsed, ParseError? orError = null)
+    where TScanner : struct, IScanner;
+public delegate bool ParserOptionalValueDelegate<TScanner, TResult>(ref TScanner scanner, ParseResult result, out TResult? parsed, ParseError? orError = null)
     where TScanner : struct, IScanner;
 
 public static class CommonParsers
@@ -83,13 +85,13 @@ public static class CommonParsers
         scanner.Position = position;
         return false;
     }
-    public static bool FollowedBy<TScanner, TResult>(ref TScanner scanner, ParseResult result, ParserValueDelegate<TScanner, TResult> func, bool withSpaces = false, bool advance = false)
+    public static bool FollowedBy<TScanner, TResult>(ref TScanner scanner, ParseResult result, ParserValueDelegate<TScanner, TResult> func, out TResult parsed, bool withSpaces = false, bool advance = false)
         where TScanner : struct, IScanner
     {
         var position = scanner.Position;
         if (withSpaces)
             Spaces0(ref scanner, null!, out _);
-        if (func.Invoke(ref scanner, result, out var parsed))
+        if (func.Invoke(ref scanner, result, out parsed))
         {
             if (!advance)
                 scanner.Position = position;
@@ -165,33 +167,9 @@ public static class CommonParsers
         where TParser : struct, IParser<TNode>
         where TNode : Node
     {
-        var position = scanner.Position;
-        nodes = [];
-        while (!scanner.IsEof)
-        {
-            if (parser.Match(ref scanner, result, out var node, orError))
-            {
-                nodes.Add(node);
-                if (withSpaces)
-                    Spaces0(ref scanner, result, out _);
-            }
-
-            if (separator is not null)
-            {
-                if (Terminals.Literal(separator, ref scanner, advance: true))
-                {
-                    if (withSpaces)
-                        Spaces0(ref scanner, result, out _);
-                }
-                else if(nodes.Count >= minimum)
-                    return true;
-                else Exit(ref scanner, result, out nodes, position, orError);
-            }
-            else Exit(ref scanner, result, out nodes, position, orError);
-        }
-        return true;
+        return Repeat(ref scanner, (ref TScanner s, ParseResult r, out TNode node, ParseError? orError) => new TParser().Match(ref s, r, out node, orError), result, out nodes, minimum, withSpaces, separator, orError);
     }
-    public static bool Repeat<TScanner, TParser, TNode, TOut>(ref TScanner scanner, ParserValueDelegate<TScanner, TNode> parser, ParseResult result, out List<TNode> nodes, int minimum, bool withSpaces = false, string? separator = null, in ParseError? orError = null)
+    public static bool Repeat<TScanner, TNode>(ref TScanner scanner, ParserValueDelegate<TScanner, TNode> parser, ParseResult result, out List<TNode> nodes, int minimum, bool withSpaces = false, string? separator = null, in ParseError? orError = null)
         where TScanner : struct, IScanner
         where TNode : Node
     {
@@ -205,6 +183,7 @@ public static class CommonParsers
                 if (withSpaces)
                     Spaces0(ref scanner, result, out _);
             }
+            else break;
 
             if (separator is not null)
             {
@@ -219,6 +198,8 @@ public static class CommonParsers
             }
             else Exit(ref scanner, result, out nodes, position, orError);
         }
-        return true;
+        if (nodes.Count >= minimum)
+            return true;
+        else return Exit(ref scanner, result, out nodes, position, orError);
     }
 }

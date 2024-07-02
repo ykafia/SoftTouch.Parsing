@@ -29,7 +29,7 @@ public record struct StatementParsers : IParser<Statement>
             return true;
         else if (Declare(ref scanner, result, out parsed))
             return true;
-        else if (DeclareAssign(ref scanner, result, out parsed))
+        else if (Assignments(ref scanner, result, out parsed))
             return true;
         else if (Block(ref scanner, result, out parsed))
             return true;
@@ -56,9 +56,12 @@ public record struct StatementParsers : IParser<Statement>
     internal static bool Declare<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
         where TScanner : struct, IScanner
         => new DeclareStatementParser().Match(ref scanner, result, out parsed, orError);
-    internal static bool DeclareAssign<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
+    internal static bool Assignments<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
         where TScanner : struct, IScanner
-        => new DeclareAssignStatementParser().Match(ref scanner, result, out parsed, orError);
+        => new AssignmentsParser().Match(ref scanner, result, out parsed, orError);
+    internal static bool VarAssign<TScanner>(ref TScanner scanner, ParseResult result, out VariableAssign parsed, ParseError? orError = null)
+        where TScanner : struct, IScanner
+        => new VariableAssignParser().Match(ref scanner, result, out parsed, orError);
     internal static bool Controls<TScanner>(ref TScanner scanner, ParseResult result, out ConditionalFlow parsed, ParseError? orError = null)
        where TScanner : struct, IScanner
        => new ControlsParser().Match(ref scanner, result, out parsed, orError);
@@ -194,9 +197,6 @@ public record struct BlockStatementParser : IParser<Statement>
 
 
 
-
-
-
 public record struct VariableAssignParser : IParser<VariableAssign>
 {
     public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out VariableAssign parsed, in ParseError? orError = null) where TScanner : struct, IScanner
@@ -206,19 +206,18 @@ public record struct VariableAssignParser : IParser<VariableAssign>
         {
             if (
                 CommonParsers.FollowedBy(
-                    ref scanner, 
-                    result, 
-                    (ref TScanner s, ParseResult result, out AssignOperator op) => 
-                        LiteralsParser.AssignOperators(ref s, null!, out op)
-                        && CommonParsers.Spaces0(ref s, result, out _),
-                    withSpaces:true, 
+                    ref scanner,
+                    result,
+                    (ref TScanner s, ParseResult result, out AssignOperator op, ParseError? orError = null) => LiteralsParser.AssignOperators(ref s, null!, out op) && CommonParsers.Spaces0(ref s, result, out _),
+                    out var op,
+                    withSpaces: true,
                     advance: true)
             )
             {
                 CommonParsers.Spaces0(ref scanner, result, out _);
-                if(ExpressionParser.Expression(ref scanner, result, out var expression))
+                if (ExpressionParser.Expression(ref scanner, result, out var expression))
                 {
-                    parsed = new(identifier, scanner.GetLocation(position..scanner.Position), expression);
+                    parsed = new(identifier, scanner.GetLocation(position..scanner.Position), op, expression);
                     return true;
                 }
                 else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected expression here", scanner.CreateError(position)));
@@ -243,41 +242,25 @@ public record struct DeclareStatementParser : IParser<Statement>
         var position = scanner.Position;
         if (
             LiteralsParser.TypeName(ref scanner, result, out var typeName)
-            && CommonParsers.Spaces1(ref scanner, result, out _, new("Expected at least one space", scanner.CreateError(scanner.Position)))
-            && LiteralsParser.Identifier(ref scanner, result, out var variableName, new("Expected an identifier", scanner.CreateError(scanner.Position)))
-            && CommonParsers.Spaces0(ref scanner, result, out _)
-            && Terminals.Char(';', ref scanner, advance: true)
-        )
-        {
-            parsed = new Declare(typeName, variableName, scanner.GetLocation(position, scanner.Position - position));
-            return true;
-        }
-        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
-    }
-}
+            && CommonParsers.Spaces1(ref scanner, result, out _)
 
-public record struct DeclarationStatementParser : IParser<Statement>
-{
-    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, in ParseError? orError = null)
-        where TScanner : struct, IScanner
-    {
-        var position = scanner.Position;
-        if (
-            LiteralsParser.TypeName(ref scanner, result, out var typeName)
-            && CommonParsers.Spaces1(ref scanner, result, out _, new("Expected at least one space", scanner.CreateError(scanner.Position)))
-            && LiteralsParser.Identifier(ref scanner, result, out var variableName, new("Use of reserved name for identifier", scanner.CreateError(scanner.Position)))
-            && CommonParsers.Spaces0(ref scanner, result, out _)
-            && Terminals.Char('=', ref scanner, advance: true)
-            && CommonParsers.Spaces0(ref scanner, result, out _)
-            && ExpressionParser.Expression(ref scanner, result, out var value, new("Expected a value expression", scanner.CreateError(scanner.Position)))
-            && CommonParsers.Spaces0(ref scanner, result, out _)
-            && Terminals.Char(';', ref scanner, advance: true)
         )
         {
-            parsed = new Decl(typeName, variableName, value, scanner.GetLocation(position, scanner.Position - position));
-            return true;
+            if (CommonParsers.Repeat<TScanner, VariableAssign>(ref scanner, StatementParsers.VarAssign, result, out var assigns, 1, true, ","))
+            {
+                CommonParsers.Spaces0(ref scanner, result, out _);
+                if (Terminals.Char(';', ref scanner, advance: true))
+                {
+                    parsed = new Declare(typeName, scanner.GetLocation(position..scanner.Position))
+                    {
+                        Variables = assigns
+                    };
+                    return true;
+                }
+                else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected semi colon to end statement", scanner.CreateError(scanner.Position)));
+            }
         }
-        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
+        return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 
@@ -287,7 +270,19 @@ public record struct AssignmentsParser : IParser<Statement>
         where TScanner : struct, IScanner
     {
         var position = scanner.Position;
-        if (CommonParsers.Repeat(ref scanner, ))
+        if (CommonParsers.Repeat<TScanner, VariableAssign>(ref scanner, StatementParsers.VarAssign, result, out var assigns, 1, true, ","))
+        {
+            CommonParsers.Spaces0(ref scanner, result, out _);
+            if (Terminals.Char(';', ref scanner, advance: true))
+            {
+                parsed = new Assign(scanner.GetLocation(position..scanner.Position))
+                {
+                    Variables = assigns
+                };
+                return true;
+            }
+            else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected semi colon to end statement", scanner.CreateError(scanner.Position)));
+        }
         else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }

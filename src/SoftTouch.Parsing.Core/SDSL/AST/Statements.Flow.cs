@@ -13,6 +13,11 @@ public class ForEach(TypeName typename, Identifier variable, Expression collecti
     public Identifier Variable { get; set; } = variable;
     public Expression Collection { get; set; } = collection;
     public Statement Body { get; set; } = body;
+
+    public override string ToString()
+    {
+        return $"foreach({Typename} {Variable} in {Collection})\n{Body}";
+    }
 }
 
 
@@ -29,6 +34,10 @@ public class While(Expression condition, Statement body, TextLocation info) : Lo
 {
     public Expression Condition { get; set; } = condition;
     public Statement Body { get; set; } = body;
+    public override string ToString()
+    {
+        return $"while({Condition})\n{Body}";
+    }
 }
 
 public enum ForAnnotationKind

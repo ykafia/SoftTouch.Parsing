@@ -28,17 +28,6 @@ public abstract class Declaration(TypeName typename, TextLocation info) : Statem
     public TypeName TypeName { get; set; } = typename;
 }
 
-public class Declare(TypeName typename, Identifier name, TextLocation info) : Declaration(typename, info)
-{
-    public Identifier Name { get; set; } = name;
-    public Expression? Value { get; set; }
-
-    public override string ToString()
-    {
-        return $"{TypeName} {Name};";
-    }
-}
-
 public class VariableAssign(Identifier name, TextLocation info, AssignOperator? op = null,  Expression? value = null) : Node(info)
 {
     public Identifier Name { get; set; } = name;
@@ -53,20 +42,22 @@ public class VariableAssign(Identifier name, TextLocation info, AssignOperator? 
         };
 }
 
-public class MultiAssign(TypeName typename, TextLocation info) : Declaration(typename, info)
+public class Declare(TypeName typename, TextLocation info) : Declaration(typename, info)
 {
     public List<VariableAssign> Variables { get; set; } = [];
-}
-
-public class Assign(Expression assigned, AssignOperator op, Expression value, TextLocation info) : Statement(info)
-{
-    public Expression Assigned { get; set; } = assigned;
-    public AssignOperator Operator { get; set; } = op;
-    public Expression Value { get; set; } = value;
 
     public override string ToString()
     {
-        return $"{Assigned} {Operator.ToAssignSymbol()} {Value};";
+        return $"{TypeName} {string.Join(", ", Variables.Select(v => v.ToString()))}";
+    }
+}
+
+public class Assign(TextLocation info) : Statement(info)
+{
+    public List<VariableAssign> Variables { get; set; } = [];
+    public override string ToString()
+    {
+        return string.Join(", ", Variables.Select(x => x.ToString())) + ";";
     }
 }
 

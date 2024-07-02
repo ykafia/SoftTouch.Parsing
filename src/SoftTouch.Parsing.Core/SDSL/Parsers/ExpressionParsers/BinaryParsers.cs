@@ -414,16 +414,15 @@ public record struct AdditionParser() : IParser<Expression>
         where TScanner : struct, IScanner
     {
         var position = scanner.Position;
-        var ws0 = new Space0();
-        ws0.Match(ref scanner, result, out _);
+        CommonParsers.Spaces0(ref scanner, result, out _);
         if (ExpressionParser.Mul(ref scanner, result, out var left))
         {
-            ws0.Match(ref scanner, result, out _);
+            CommonParsers.Spaces0(ref scanner, result, out _);
             if (Terminals.Set("+-", ref scanner))
             {
                 var op = ((char)scanner.Peek()).ToOperator();
                 scanner.Advance(1);
-                ws0.Match(ref scanner, result, out _);
+                CommonParsers.Spaces0(ref scanner, result, out _);
                 if (ExpressionParser.Add(ref scanner, result, out var add))
                 {
                     parsed = new BinaryExpression(left, op, add, scanner.GetLocation(position, scanner.Position - position));
