@@ -116,6 +116,7 @@ public record struct ShaderClassParser : IParser<ShaderClass>
                             break;
                         CommonParsers.Spaces0(ref scanner, result, out _);
                     }
+                    CommonParsers.FollowedBy(ref scanner, Terminals.Char(';'), withSpaces: true, advance: true);
                     parsed.Info = scanner.GetLocation(position..scanner.Position);
                     return true;
                 }

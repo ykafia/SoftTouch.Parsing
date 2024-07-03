@@ -61,7 +61,7 @@ public static class CommonParsers
         var position = scanner.Position;
         if (withSpaces)
             Spaces0(ref scanner, null!, out _);
-        if (terminal.Match(ref scanner, advance: false))
+        if (terminal.Match(ref scanner, advance: advance))
         {
             if (!advance)
                 scanner.Position = position;

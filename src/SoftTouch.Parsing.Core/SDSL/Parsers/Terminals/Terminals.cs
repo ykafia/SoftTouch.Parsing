@@ -82,9 +82,10 @@ public record struct CharTerminalParser(char Character) : ITerminal
     public readonly bool Match<TScanner>(ref TScanner scanner, bool advance)
         where TScanner : struct, IScanner
     {
-        if (advance && scanner.Peek() == Character)
+        if (scanner.Peek() == Character)
         {
-            scanner.Advance(1);
+            if(advance)
+                scanner.Advance(1);
             return true;
         }
         return false;
