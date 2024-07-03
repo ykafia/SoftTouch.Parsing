@@ -20,11 +20,11 @@ public record struct FlowParsers : IParser<Flow>
             parsed = fe;
             return true;
         }
-        // else if (For(ref scanner, result, out var f, orError))
-        // {
-        //     parsed = f;
-        //     return true;
-        // }
+        else if (For(ref scanner, result, out var f, orError))
+        {
+            parsed = f;
+            return true;
+        }
         else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 
@@ -49,35 +49,52 @@ public record struct ForParser : IParser<For>
         var position = scanner.Position;
         if(
             Terminals.Literal("for", ref scanner, advance: true)
-            && CommonParsers.FollowedBy(ref scanner, Terminals.Char('('), withSpaces: true)
+            && CommonParsers.FollowedBy(ref scanner, Terminals.Char('('), withSpaces: true, advance: true)
         )
         {
+            Statement? init = null;
+            Statement? condition = null;
+            Statement? expression = null;
             CommonParsers.Spaces0(ref scanner, result, out _);
-            Terminals.Char('(', ref scanner, advance: true);
-            throw new NotImplementedException();
 
+            // Parsing the initialization
+            if(StatementParsers.Expression(ref scanner, result, out init)){}
+            else if(StatementParsers.Assignments(ref scanner, result, out init)){}
+            else if(StatementParsers.Declare(ref scanner, result, out init)){}
+            else if(StatementParsers.Empty(ref scanner, result, out init)){}
+            else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected initializer", scanner.CreateError(scanner.Position)));
+
+            CommonParsers.Spaces0(ref scanner, result, out _);
+            // Parsing the condition
+
+            if (StatementParsers.Expression(ref scanner, result, out condition)){}
+            else if (StatementParsers.Empty(ref scanner, result, out condition)){}
+            else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected condition expression", scanner.CreateError(scanner.Position)));
+            
+            CommonParsers.Spaces0(ref scanner, result, out _);
+            // parsing the final expression
+            
+            var tmpPos = scanner.Position;
+            if(CommonParsers.FollowedBy(ref scanner, Terminals.Char(')'), withSpaces: true, advance: true))
+                expression = new EmptyStatement(scanner.GetLocation(tmpPos..scanner.Position));
+            else if(ExpressionParser.Expression(ref scanner, result, out var exp) && CommonParsers.FollowedBy(ref scanner, Terminals.Char(')'), withSpaces: true, advance: true))
+            {
+                expression = new ExpressionStatement(exp, exp.Info);
+            }
+            else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected end expression", scanner.CreateError(scanner.Position)));
+
+            CommonParsers.Spaces0(ref scanner, result, out _);
+
+            // parsing the block or statement
+
+            if(StatementParsers.Statement(ref scanner, result, out var body))
+            {
+                parsed = new For(init, condition, expression, body, scanner.GetLocation(position..scanner.Position));
+                return true;
+            }
+            else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
         }
         else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
-        // if (
-        //     Terminals.Literal("if", ref scanner, advance: true)
-        //     && CommonParsers.Spaces0(ref scanner, result, out _)
-        //     && Terminals.Char('(', ref scanner, advance: true)
-        //     && CommonParsers.Spaces0(ref scanner, result, out _)
-        //     && ExpressionParser.Expression(ref scanner, result, out var condition, new("Expected expression here", scanner.CreateError(scanner.Position)))
-        //     && CommonParsers.Spaces0(ref scanner, result, out _)
-        // )
-        // {
-        //     if (Terminals.Char(')', ref scanner, advance: true) && CommonParsers.Spaces0(ref scanner, result, out _))
-        //     {
-        //         if (StatementParsers.Statement(ref scanner, result, out var statement, new("Expected statement here", scanner.CreateError(scanner.Position))))
-        //         {
-        //             parsed = new(condition, statement, scanner.GetLocation(position..scanner.Position));
-        //             return true;
-        //         }
-        //     }
-        //     else return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected closing parenthesis", scanner.CreateError(scanner.Position)));
-        // }
-        // return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 }
 

@@ -9,25 +9,49 @@ public record struct ShaderElementParsers : IParser<ShaderElement>
         where TScanner : struct, IScanner
     {
         var position = scanner.Position;
-        if(BufferParsers.Buffer(ref scanner, result, out var buffer, orError))
+        if (BufferParsers.Buffer(ref scanner, result, out var buffer, orError))
         {
             parsed = buffer;
             return true;
         }
-        else if(ShaderMemberParser.Member(ref scanner, result, out var member, orError))
+        else
         {
-            parsed = member;
-            return true;
+            bool isStaged = false;
+            bool isStreamed = false;
+            var tmpPos = position;
+            if (Terminals.Literal("stage", ref scanner, advance: true) && CommonParsers.Spaces1(ref scanner, result, out _))
+            {
+                isStaged = true;
+                tmpPos = scanner.Position;
+            }
+            else
+                scanner.Position = tmpPos;
+            if (Terminals.Literal("stream", ref scanner, advance: true) && CommonParsers.Spaces1(ref scanner, result, out _))
+                isStreamed = true;
+            else
+                scanner.Position = tmpPos;
+            if (ShaderMemberParser.Member(ref scanner, result, out var member, orError))
+            {
+                member.IsStream = isStreamed;
+                member.IsStaged = isStaged;
+                parsed = member;
+                return true;
+            }
+            else if (Method(ref scanner, result, out var method))
+            {
+                method.IsStaged = isStaged;
+                parsed = method;
+                return true;
+            }
+            else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
         }
-        else if(Method(ref scanner, result, out parsed))
-            return true;
-        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
+        
     }
     public static bool ShaderElement<TScanner>(ref TScanner scanner, ParseResult result, out ShaderElement parsed, in ParseError? orError = null)
         where TScanner : struct, IScanner
         => new ShaderElementParsers().Match(ref scanner, result, out parsed, in orError);
 
-    public static bool Method<TScanner>(ref TScanner scanner, ParseResult result, out ShaderElement parsed, in ParseError? orError = null)
+    public static bool Method<TScanner>(ref TScanner scanner, ParseResult result, out ShaderMethod parsed, in ParseError? orError = null)
         where TScanner : struct, IScanner
         => new ShaderMethodParsers().Match(ref scanner, result, out parsed, in orError);
 }

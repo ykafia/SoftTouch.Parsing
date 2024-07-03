@@ -9,7 +9,9 @@ public record struct StatementParsers : IParser<Statement>
         where TScanner : struct, IScanner
     {
         var position = scanner.Position;
-        if (Controls(ref scanner, result, out var cond))
+        if (Empty(ref scanner, result, out parsed))
+            return true;
+        else if (Controls(ref scanner, result, out var cond))
         {
             parsed = cond;
             return true;
@@ -38,6 +40,9 @@ public record struct StatementParsers : IParser<Statement>
     internal static bool Statement<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
         where TScanner : struct, IScanner
         => new StatementParsers().Match(ref scanner, result, out parsed, orError);
+    internal static bool Empty<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
+        where TScanner : struct, IScanner
+        => new EmptyStatementParser().Match(ref scanner, result, out parsed, orError);
     internal static bool Block<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, ParseError? orError = null)
         where TScanner : struct, IScanner
         => new BlockStatementParser().Match(ref scanner, result, out parsed, orError);
@@ -68,6 +73,24 @@ public record struct StatementParsers : IParser<Statement>
     internal static bool Flow<TScanner>(ref TScanner scanner, ParseResult result, out Flow parsed, ParseError? orError = null)
       where TScanner : struct, IScanner
       => new FlowParsers().Match(ref scanner, result, out parsed, orError);
+}
+
+
+
+public record struct EmptyStatementParser : IParser<Statement>
+{
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out Statement parsed, in ParseError? orError = null)
+        where TScanner : struct, IScanner
+    {
+        parsed = null!;
+        var position = scanner.Position;
+        if(Terminals.Char(';', ref scanner, advance : true))
+        {
+            parsed = new EmptyStatement(scanner.GetLocation(position..scanner.Position));
+            return true;
+        }
+        return false;
+    }
 }
 
 

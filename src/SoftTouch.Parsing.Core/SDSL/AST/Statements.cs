@@ -4,6 +4,8 @@ namespace SoftTouch.Parsing.SDSL.AST;
 
 public abstract class Statement(TextLocation info) : ValueNode(info);
 
+public class EmptyStatement(TextLocation info) : Statement(info);
+
 public class ExpressionStatement(Expression expression, TextLocation info) : Statement(info)
 {
     public Expression Expression { get; set; } = expression;

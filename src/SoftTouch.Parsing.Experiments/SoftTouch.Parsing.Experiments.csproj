@@ -2,11 +2,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SoftTouch.Parsing.Core\SoftTouch.Parsing.Core.csproj" />
-    <ProjectReference Include="..\..\submodules\SDSL\src\SDSL\SDSL.csproj" />
+    <!-- <ProjectReference Include="..\..\submodules\SDSL\src\SDSL\SDSL.csproj" /> -->
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stride.Shaders.Parser" Version="4.2.0.2188" />
+    <!-- <PackageReference Include="Stride.Shaders.Parser" Version="4.2.0.2188" /> -->
   </ItemGroup>
 
   <PropertyGroup>

@@ -21,15 +21,6 @@ public class ForEach(TypeName typename, Identifier variable, Expression collecti
 }
 
 
-public abstract class ForInitializer(TextLocation info) : Node(info);
-public abstract class InitializerDeclare(TypeName typename, Identifier name, Expression value, TextLocation info) : Node(info)
-{
-    public TypeName TypeName { get; set; } = typename;
-    public Identifier VariableName { get; set; } = name;
-    public Expression Value { get; set; } = value;
-}
-
-
 public class While(Expression condition, Statement body, TextLocation info) : Loop(info)
 {
     public Expression Condition { get; set; } = condition;
@@ -49,12 +40,17 @@ public enum ForAnnotationKind
 }
 public record struct ForAnnotation(ForAnnotationKind Kind, int? Count = null);
 
-public class For(ForInitializer initializer, Expression cond, Statement update, TextLocation info) : Loop(info)
+public class For(Statement initializer, Statement cond, Statement update, Statement body, TextLocation info) : Loop(info)
 {
-    public ForInitializer Initializer { get; set; } = initializer;
-    public Expression Condition { get; set; } = cond;
+    public Statement Initializer { get; set; } = initializer;
+    public Statement Condition { get; set; } = cond;
     public Statement Update { get; set; } = update;
-    public List<Statement> Body { get; set; } = [];
+    public Statement Body { get; set; } = body;
     public List<ForAnnotation> Annotations { get; set; } = [];
+
+    public override string ToString()
+    {
+        return $"for({Initializer} {Condition} {Update})\n{Body}";
+    }
 }
 

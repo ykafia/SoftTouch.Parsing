@@ -3,9 +3,9 @@ using SoftTouch.Parsing.SDSL.AST;
 namespace SoftTouch.Parsing.SDSL;
 
 
-public record struct ShaderMethodParsers : IParser<ShaderElement>
+public record struct ShaderMethodParsers : IParser<ShaderMethod>
 {
-    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out ShaderElement parsed, in ParseError? orError = null)
+    public readonly bool Match<TScanner>(ref TScanner scanner, ParseResult result, out ShaderMethod parsed, in ParseError? orError = null)
         where TScanner : struct, IScanner
     {
         if (Method(ref scanner, result, out var method, in orError))
@@ -69,13 +69,8 @@ public record struct MethodParser : IParser<ShaderMethod>
     {
         parsed = null!;
         var position = scanner.Position;
-        var isStage = false;
-        if (Terminals.Literal("stage ", ref scanner, advance: true))
-            isStage = true;
-        CommonParsers.Spaces0(ref scanner, result, out _);
-        if (Terminals.Literal("abstract ", ref scanner, advance: true))
+        if (Terminals.Literal("abstract", ref scanner, advance: true) && CommonParsers.Spaces1(ref scanner, result, out _))
         {
-            CommonParsers.Spaces0(ref scanner, result, out _);
             if (
                 LiteralsParser.TypeName(ref scanner, result, out var typename, orError: new("Expected type name here", scanner.CreateError(scanner.Position)))
                 && CommonParsers.Spaces1(ref scanner, result, out _)
@@ -95,27 +90,32 @@ public record struct MethodParser : IParser<ShaderMethod>
                     {
                         if (orError != null)
                             return CommonParsers.Exit(ref scanner, result, out parsed, position, new("Expected semi colon", scanner.CreateError(scanner.Position)));
-
-                        parsed = new(typename, methodName, scanner.GetLocation(position..scanner.Position), isStaged: isStage, isAbstract: true)
+                        else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
+                    }
+                    else
+                    {
+                        parsed = new(typename, methodName, scanner.GetLocation(position..scanner.Position), isAbstract: true)
                         {
                             ParameterList = parameters
                         };
                         return true;
-
                     }
-                    else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
                 }
                 else return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
             }
         }
-        else if (Terminals.Literal("clone ", ref scanner) || Terminals.Literal("override ", ref scanner))
+        else
+            scanner.Position = position;
+        if (Terminals.AnyOf(["clone", "override"], ref scanner, out var matched, advance: true) && CommonParsers.Spaces1(ref scanner, result, out _))
         {
             var isClone = false;
             var isOverride = false;
-            if (Terminals.Literal("clone ", ref scanner, advance: true))
+            var tmpPos = scanner.Position;
+            if (matched == "clone")
                 isClone = true;
-            else if (Terminals.Literal("override ", ref scanner, advance: true))
+            else if (matched == "override")
                 isOverride = true;
+
             CommonParsers.Spaces0(ref scanner, result, out _);
             if (ShaderMethodParsers.Simple(ref scanner, result, out parsed, orError))
             {
@@ -125,12 +125,13 @@ public record struct MethodParser : IParser<ShaderMethod>
                 return true;
             }
         }
-        else if (ShaderMethodParsers.Simple(ref scanner, result, out parsed, orError))
+        else
+            scanner.Position = position;
+        if (ShaderMethodParsers.Simple(ref scanner, result, out parsed, orError))
         {
             parsed.Info = scanner.GetLocation(position..scanner.Position);
             return true;
         }
-
         return CommonParsers.Exit(ref scanner, result, out parsed, position, orError);
     }
 

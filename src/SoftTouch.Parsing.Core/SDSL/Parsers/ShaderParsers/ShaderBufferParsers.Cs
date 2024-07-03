@@ -123,9 +123,10 @@ public record struct BufferMemberParser : IParser<ShaderMember>
         var position = scanner.Position;
         var isStage = false;
         var isStream = false;
-        if (Terminals.Literal("stage ", ref scanner, advance: true))
+        if (Terminals.Literal("stage", ref scanner, advance: true) && CommonParsers.Spaces1(ref scanner, result, out _))
             isStage = true;
-        CommonParsers.Spaces0(ref scanner, result, out _);
+        else
+            scanner.Position = position;
         if (LiteralsParser.TypeName(ref scanner, result, out var typename)
             && CommonParsers.Spaces1(ref scanner, result, out _)
             && LiteralsParser.Identifier(ref scanner, result, out Identifier name)
