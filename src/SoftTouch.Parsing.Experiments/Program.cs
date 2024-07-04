@@ -21,7 +21,6 @@ var path = @"C:\Users\youness_kafia\Documents\dotnetProjs\SoftTouch.Parsing\asse
 Directory.SetCurrentDirectory(path);
 var file = File.ReadAllText("./SDSL/Commented.sdsl");
 var parent = File.ReadAllText("./SDSL/Parent.sdsl");
-var x = 0;
 var result = SDSLParser.Parse(parent);
 if(result.AST is not null)
     Console.WriteLine(result.AST);
