@@ -162,7 +162,7 @@ public static class CommonParsers
     }
 
 
-    public static bool Repeat<TScanner, TParser, TNode, TOut>(ref TScanner scanner, TParser parser, ParseResult result, out List<TNode> nodes, int minimum, bool withSpaces = false, string? separator = null, in ParseError? orError = null)
+    public static bool Repeat<TScanner, TParser, TNode>(ref TScanner scanner, TParser parser, ParseResult result, out List<TNode> nodes, int minimum, bool withSpaces = false, string? separator = null, in ParseError? orError = null)
         where TScanner : struct, IScanner
         where TParser : struct, IParser<TNode>
         where TNode : Node

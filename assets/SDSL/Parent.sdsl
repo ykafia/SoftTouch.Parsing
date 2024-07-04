@@ -2,6 +2,11 @@ namespace machin
 {
     shader Parent 
     {
+
+        struct Machin {
+            int a;
+        }
+
         stream int a;
 
         stage abstract void DoSomething();

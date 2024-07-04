@@ -8,6 +8,28 @@ public abstract class ShaderBuffer(Identifier name, TextLocation info) : ShaderE
     public Identifier Name { get; set; } = name;
 }
 
+public class ShaderStructMember(TypeName typename, Identifier identifier, TextLocation info) : Node(info)
+{
+    public TypeName TypeName { get; set; } = typename;
+    public Identifier Name { get; set; } = identifier;
+
+    public override string ToString()
+    {
+        return $"{TypeName} {Name}";
+    }
+}
+
+public class ShaderStruct(Identifier typename, TextLocation info) : ShaderElement(info)
+{
+    public Identifier TypeName { get; set; } = typename;
+    public List<ShaderStructMember> Members { get; set; } = [];
+
+    public override string ToString()
+    {
+        return $"struct {TypeName} ({string.Join(", ", Members)})";
+    }
+}
+
 public sealed class CBuffer(Identifier name, TextLocation info) : ShaderBuffer(name, info)
 {
     public List<ShaderMember> Members { get; set; } = [];
@@ -15,63 +37,4 @@ public sealed class CBuffer(Identifier name, TextLocation info) : ShaderBuffer(n
 public sealed class TBuffer(Identifier name, TextLocation info) : ShaderBuffer(name, info)
 {
     public List<ShaderMember> Members { get; set; } = [];
-}
-
-public abstract class MethodOrMember(TextLocation info, bool isStaged = false) : ShaderElement(info)
-{
-    public bool IsStaged { get; set; } = isStaged;
-}
-
-
-public sealed class ShaderMember(TypeName type, Identifier name, Expression? initialValue, TextLocation location, bool isStaged = false, bool isStream = false, Identifier? semantic = null) : MethodOrMember(location, isStaged)
-{
-    public TypeName Type { get; set; } = type;
-    public Identifier Name { get; set; } = name;
-    public Identifier? Semantic { get; set; } = semantic;
-    public bool IsStream { get; set;} = isStream;
-    public Expression? Value { get; set; } = initialValue;
-
-    public override string ToString()
-    {
-        return $"{Type} {Name}";
-    }
-}
-
-public class ShaderMethod(TypeName returnType, Identifier name, TextLocation info, Identifier? visibility = null, Identifier? storage = null, bool isStaged = false, bool isAbstract = false, bool isVirtual = false, bool isOverride = false, bool isClone = false) : MethodOrMember(info, isStaged)
-{
-    public TypeName ReturnType { get; set; } = returnType;
-    public Identifier Name { get; set; } = name;
-    public Identifier? Visibility { get; set; } = visibility;
-    public Identifier? Storage { get; set; } = storage;
-    public bool? IsAbstract { get; set; } = isAbstract;
-    public bool? IsVirtual { get; set; } = isVirtual;
-    public bool? IsOverride { get; set; } = isOverride;
-    public bool? IsClone { get; set; } = isClone;
-    public ShaderParameterDeclarations? ParameterList { get; set; }
-    public BlockStatement? Body { get; set; }
-
-    public override string ToString()
-    {
-        return $"{ReturnType} {Name}()\n{Body}\n";
-    }
-}
-
-public record struct ShaderParameter(TypeName TypeName, Identifier Name);
-
-
-public abstract class ParameterListNode(TextLocation info) : Node(info);
-
-public class ShaderParameterDeclarations(TextLocation info) : ParameterListNode(info)
-{
-    public List<ShaderParameter> Parameters { get; set; } = [];
-}
-
-public class ShaderExpressionList(TextLocation info) : ParameterListNode(info)
-{
-    public List<Expression> Values { get; set; } = [];
-
-    public override string ToString()
-    {
-        return string.Join(", ", Values);
-    }
 }
